@@ -15,11 +15,13 @@ import { EmptyState } from '../ui/empty-state';
 import { FieldFrame, TextArea } from '../ui/form-field';
 import { PageHeader } from '../ui/page-header';
 import { StatusBadge } from '../ui/status-badge';
+import { WorkspacePagination } from '../ui/workspace-pagination';
 
 export function TripsClient() {
   const { request } = useAuth();
   const [items, setItems] = useState<BookingView[]>([]);
   const [meta, setMeta] = useState<PaginationMeta | null>(null);
+  const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [cancelId, setCancelId] = useState<string | null>(null);
   const [reason, setReason] = useState('');
@@ -31,7 +33,7 @@ export function TripsClient() {
     setError(null);
     try {
       const data = await request<{ items: BookingView[]; meta: PaginationMeta }>(
-        '/bookings?page=1&pageSize=50',
+        '/bookings?page=' + String(page) + '&pageSize=12',
       );
       setItems(data.items);
       setMeta(data.meta);
@@ -40,7 +42,7 @@ export function TripsClient() {
     } finally {
       setLoading(false);
     }
-  }, [request]);
+  }, [page, request]);
 
   useEffect(() => {
     void load();
@@ -172,6 +174,7 @@ export function TripsClient() {
           ))}
         </div>
       )}
+      {meta ? <WorkspacePagination meta={meta} onPage={setPage} /> : null}
     </>
   );
 }
