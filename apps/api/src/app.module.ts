@@ -11,8 +11,11 @@ import { ResponseEnvelopeInterceptor } from './common/http/response-envelope.int
 import { RequestLoggingInterceptor } from './common/logging/request-logging.interceptor.js';
 import { validateEnv } from './config/env.js';
 import { DatabaseModule } from './database/database.module.js';
+import { FavouritesModule } from './favourites/favourites.module.js';
 import { HealthModule } from './health/health.module.js';
+import { PetsModule } from './pets/pets.module.js';
 import { PropertiesModule } from './properties/properties.module.js';
+import { ReviewsModule } from './reviews/reviews.module.js';
 
 @Module({
   imports: [
@@ -25,6 +28,9 @@ import { PropertiesModule } from './properties/properties.module.js';
     ThrottlerModule.forRoot([{ ttl: 60_000, limit: 120 }]),
     AuthModule,
     BookingsModule,
+    PetsModule,
+    FavouritesModule,
+    ReviewsModule,
     PropertiesModule,
     HealthModule,
   ],
