@@ -17,7 +17,6 @@ import {
   catalogueInputFromSearchParams,
   catalogueQueryString,
   firstParam,
-  preserveStayContext,
   type PublicSearchParams,
 } from '../../lib/search-params';
 import { toPropertyCardData } from '../../lib/property-view';
@@ -56,7 +55,7 @@ export default async function StaysPage({
     catalogueInputFromSearchParams(params),
   );
   const query = catalogueQueryString(params);
-  const stayContext = preserveStayContext(params);
+  const stayContext = query;
 
   const facets = await publicApiGet<CatalogueFacets>('/properties/facets', {
     revalidate: 60,
