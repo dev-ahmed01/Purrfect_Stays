@@ -99,6 +99,10 @@ DELETE /api/v1/reviews/:reviewId
 
 Users can only access their own reviews.
 
+The author's review list includes withdrawn review history. Withdrawn rows remain excluded from public review feeds and admin moderation queues, but keeping them visible to the author prevents the completed booking from appearing eligible for a second review.
+
+Booking account views also expose the one-to-one review linkage (`review = null | { id, status, deletedAt }`). The frontend therefore derives review eligibility from the booking itself rather than from whichever page of review history happens to be loaded.
+
 Editing any non-withdrawn review sends it back to `PENDING` and clears its prior moderation decision. If the review had been public, the property's rating aggregate is recomputed in the same serializable transaction.
 
 Deleting a review is a soft withdrawal:
