@@ -258,6 +258,7 @@ model RoomInventory {
   nightlyRatePaise   Int?
   closed             Boolean  @default(false)
   roomType           RoomType @relation(fields: [roomTypeId], references: [id], onDelete: Cascade)
+  bookingReservations BookingInventoryReservation[]
 
   @@unique([roomTypeId, date])
   @@index([date, closed])
@@ -298,11 +299,24 @@ model Booking {
   pets               BookingPet[]
   review             Review?
   statusEvents       BookingStatusEvent[]
+  inventoryReservations BookingInventoryReservation[]
 
   @@unique([userId, idempotencyKey])
   @@index([userId, status, checkIn])
   @@index([propertyId, status, checkIn])
   @@index([roomTypeId, checkIn, checkOut])
+}
+
+model BookingInventoryReservation {
+  bookingId       String        @db.Uuid
+  roomInventoryId String        @db.Uuid
+  createdAt       DateTime      @default(now())
+  releasedAt      DateTime?
+  booking         Booking       @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  roomInventory   RoomInventory @relation(fields: [roomInventoryId], references: [id], onDelete: Restrict)
+
+  @@id([bookingId, roomInventoryId])
+  @@index([roomInventoryId, releasedAt])
 }
 
 model BookingStatusEvent {
