@@ -83,9 +83,9 @@ export default async function StaysPage({
             <h1>{title}</h1>
             <p>
               {results
-                ? results!.meta.totalItems === 1
+                ? results.meta.totalItems === 1
                   ? '1 stay matches your filters.'
-                  : `${results!.meta.totalItems} stays match your filters.`
+                  : `${results.meta.totalItems} stays match your filters.`
                 : 'Adjust the filters below to continue.'}
             </p>
           </div>
@@ -105,7 +105,7 @@ export default async function StaysPage({
             ) : results && results.items.length > 0 ? (
               <>
                 <div className="stays-grid">
-                  {results!.items.map((property) => (
+                  {results.items.map((property) => (
                     <PropertyCard
                       key={property.id}
                       property={toPropertyCardData(property, stayContext)}
@@ -114,23 +114,23 @@ export default async function StaysPage({
                 </div>
 
                 <nav className="pagination" aria-label="Search result pages">
-                  {results!.meta.hasPreviousPage ? (
+                  {results.meta.hasPreviousPage ? (
                     <Link
                       className="button button-outline button-sm"
-                      href={pageHref(params, results!.meta.page - 1)}
+                      href={pageHref(params, results.meta.page - 1)}
                     >
                       ← Previous
                     </Link>
                   ) : <span />}
 
                   <span>
-                    Page {results!.meta.page} of {results!.meta.totalPages}
+                    Page {results.meta.page} of {results.meta.totalPages}
                   </span>
 
-                  {results!.meta.hasNextPage ? (
+                  {results.meta.hasNextPage ? (
                     <Link
                       className="button button-outline button-sm"
-                      href={pageHref(params, results!.meta.page + 1)}
+                      href={pageHref(params, results.meta.page + 1)}
                     >
                       Next →
                     </Link>
