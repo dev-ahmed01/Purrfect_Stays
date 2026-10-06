@@ -101,7 +101,7 @@ export function AppShell({
             </div>
           </div>
         </header>
-        <main className="app-content">{children}</main>
+        <main className="app-content" id="main-content">{children}</main>
       </div>
     </div>
   );
