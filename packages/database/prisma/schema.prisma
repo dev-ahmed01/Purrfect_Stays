@@ -92,6 +92,7 @@ model User {
   refreshSessions   RefreshSession[]
   verificationActs  PropertyVerification[] @relation("VerificationActor")
   bookingStatusActs  BookingStatusEvent[]   @relation("BookingStatusActor")
+  reviewModerationActs Review[]              @relation("ReviewModerator")
 
   @@index([role, status])
 }
@@ -127,12 +128,13 @@ model Pet {
   birthDate    DateTime?  @db.Date
   vaccinated   Boolean    @default(false)
   specialNeeds String?
+  archivedAt   DateTime?
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
   user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   bookingPets  BookingPet[]
 
-  @@index([userId])
+  @@index([userId, archivedAt])
 }
 
 model Property {
@@ -367,14 +369,19 @@ model Review {
   rating     Int
   title      String
   body       String
-  status     ReviewStatus @default(PENDING)
-  createdAt  DateTime     @default(now())
-  updatedAt  DateTime     @updatedAt
-  booking    Booking      @relation(fields: [bookingId], references: [id], onDelete: Restrict)
-  user       User         @relation(fields: [userId], references: [id], onDelete: Restrict)
-  property   Property     @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  status            ReviewStatus @default(PENDING)
+  moderatedByUserId String?      @db.Uuid
+  moderatedAt       DateTime?
+  moderationNote    String?
+  deletedAt         DateTime?
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+  booking           Booking      @relation(fields: [bookingId], references: [id], onDelete: Restrict)
+  user              User         @relation(fields: [userId], references: [id], onDelete: Restrict)
+  property          Property     @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  moderatedBy       User?        @relation("ReviewModerator", fields: [moderatedByUserId], references: [id], onDelete: SetNull)
 
-  @@index([propertyId, status, createdAt])
+  @@index([propertyId, status, deletedAt, createdAt])
   @@index([userId, createdAt])
 }
 
