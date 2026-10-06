@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import type { ReactNode } from 'react';
 import { DM_Sans, Playfair_Display } from 'next/font/google';
 import { AuthProvider } from '../auth/auth-provider';
 import './globals.css';
@@ -24,7 +25,7 @@ export const metadata: Metadata = {
   applicationName: 'Purrfect Stays',
 };
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
   return (
     <html lang="en">
       <body className={`${dmSans.variable} ${playfair.variable}`}>
