@@ -1,6 +1,6 @@
 # Build Status
 
-Current engineering milestone: **10/14 complete — Discovery, detail & booking frontend next**
+Current engineering milestone: **11/14 complete — Account & operations frontend next**
 
 | Phase | Status | Scope |
 |---|---|---|
@@ -14,40 +14,43 @@ Current engineering milestone: **10/14 complete — Discovery, detail & booking 
 | 8/14 | ✅ Complete | Owned pet CRUD/archive, booking-safe pet history, idempotent favourites, completed-stay reviews, moderation and transactional rating aggregates |
 | 9/14 | ✅ Complete | Partner-owned listing CRUD, draft/review/publish lifecycle, pet policy, images/amenities, room types, inventory calendar, partner dashboard/bookings and operational stay transitions |
 | 10/14 | ✅ Source complete | Full frontend design system, in-memory auth client, login/signup, public navigation, reusable travel/UI primitives, role-gated account/partner/admin shells and global UX states |
-| 11/14 | ⏭️ Next | Live database-driven home/search, filters, property detail, quote and booking experience |
-| 12/14 | Planned | Account/trips/pets/favourites/reviews and full partner/admin operational frontend |
+| 11/14 | ✅ Source complete | Live database-driven home/search, URL filters, property detail/reviews, auth-aware pet selection, authoritative quote display and idempotent booking confirmation |
+| 12/14 | ⏭️ Next | Account/trips/pets/favourites/reviews plus full partner/admin operational frontend |
 | 13/14 | Planned | Tests, browser verification, Redis-backed distributed rate limits, security hardening, observability |
 | 14/14 | Planned | CI/CD, deployment, migrations, final release verification |
 
-## Phase 10 frontend guarantees
+## Phase 11 discovery/booking guarantees
 
-- The supplied Playfair + DM Sans, coral/beige/sage visual language remains the frontend design contract.
-- Brand colors, borders, shadows, radii and content widths are centralized as CSS tokens.
-- Shared Button, Card, form, alert, badge, skeleton, empty-state and page-header primitives replace route-specific UI styling.
-- Destination, property, rating, amenity, filter and booking-card components establish a reusable travel-product vocabulary.
-- Property cards use next/image with explicit responsive sizing and an approved remote image host.
-- Public navigation is responsive, keyboard-accessible and session/role aware.
-- Mobile navigation uses an explicit accessible menu control.
-- Access JWTs remain in browser memory only.
-- Refresh authentication continues through the backend HttpOnly cookie.
-- Browser token refresh is single-flight to avoid refresh-token rotation races.
-- API requests retry authentication at most once after a 401.
-- Login and signup use the real auth API plus the shared Zod request contracts.
-- Successful authentication routes USER, PARTNER and ADMIN accounts to their own workspaces.
-- /account, /partner and /admin are protected by role gates and shared application shells.
-- Workspace active navigation is route-aware without falsely keeping Overview active on nested pages.
-- Skip-to-content navigation and stable main landmarks are present on public, auth, loading and protected-route states.
-- Global loading uses shaped skeletons rather than full-screen spinners.
-- Global error and not-found surfaces use product language and recovery actions.
-- Reduced-motion users have animation/transition suppression.
-- Responsive CSS covers public travel pages, auth forms and workspace navigation.
-- The homepage now consumes the reusable destination/property/footer components rather than duplicating their markup.
-- User-facing product copy no longer exposes internal engineering phases.
+- Homepage featured stays, destination counts and amenity counts come from public catalogue APIs rather than hard-coded arrays.
+- Hero search sends paired travel dates plus guest and pet counts.
+- /stays is database-driven and uses no-store catalogue-result requests.
+- Search/facet state is represented in the URL and survives sort/pagination navigation.
+- Frontend URL input is validated by the shared propertySearchSchema before a catalogue request.
+- Invalid/incomplete filter state gets an inline search error rather than unrelated fallback results.
+- Multiple amenity filters preserve backend all-of semantics.
+- Search cards preserve the complete filtered search query when opening a property.
+- Property-detail breadcrumbs return to the exact originating search state.
+- Property detail uses the public verified property endpoint and published public-review endpoint.
+- Public detail pages show verified amenities and structured pet policy without making client-side compatibility claims.
+- Approved seeded remote photography uses next/image; unapproved remote image hosts degrade to a safe visual fallback.
+- Public rating count remains distinct from number of locally retrievable review bodies.
+- Anonymous booking CTAs preserve a guarded same-app return path through login/signup.
+- Customer booking UI is available only to USER sessions.
+- Booking pet choices come from the authenticated user's active /pets endpoint.
+- Booking state is cleared when authenticated identity changes.
+- Quote requests send only room/dates/guests/pet IDs; totals are supplied by the backend.
+- Changing any booking input invalidates the current quote.
+- Booking creation resends the booking inputs and relies on the backend to revalidate price, compatibility and inventory transactionally.
+- Browser booking creation uses a stable idempotency key for retries of an unchanged payload.
+- A changed booking payload receives a new idempotency key.
+- Confirmation language represents a reservation, not payment capture.
+- Minimum travel date follows the Asia/Kolkata business calendar used by the backend.
+- Search and detail routes have dedicated content-shaped loading skeletons.
 
 ## Verification note
 
-Frontend source is complete for Phase 10, but runtime verification has not been performed in this execution environment because a clean external dependency install is still unavailable.
+Phases 10 and 11 are source complete, but frontend runtime verification has not been performed in this execution environment because clean external dependency installation remains unavailable.
 
-The current status therefore does **not** claim that `next build`, browser rendering or automated accessibility checks have passed.
+The current status therefore does **not** claim that `next build`, browser rendering, end-to-end booking tests or automated accessibility checks have passed.
 
 Generated Prisma migrations and full release verification remain outstanding.
