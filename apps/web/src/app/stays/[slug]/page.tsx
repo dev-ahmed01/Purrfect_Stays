@@ -67,6 +67,13 @@ export default async function PropertyDetailPage({
     ),
   ]);
 
+  const indiaBusinessDate = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Kolkata',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date());
+
   const policy = property.petPolicy;
   const species = [
     policy?.allowsDogs ? 'Dogs' : null,
@@ -219,6 +226,7 @@ export default async function PropertyDetailPage({
               initialCheckIn={firstParam(query, 'checkIn')}
               initialCheckOut={firstParam(query, 'checkOut')}
               initialGuests={firstParam(query, 'guests')}
+              minDate={indiaBusinessDate}
               property={property}
             />
             <div className="detail-pet-first-note">
