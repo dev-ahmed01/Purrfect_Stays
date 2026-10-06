@@ -1,6 +1,6 @@
 # Build Status
 
-Current engineering milestone: **11/14 complete — Account & operations frontend next**
+Current engineering milestone: **12/14 complete — Verification, tests & hardening next**
 
 | Phase | Status | Scope |
 |---|---|---|
@@ -15,42 +15,59 @@ Current engineering milestone: **11/14 complete — Account & operations fronten
 | 9/14 | ✅ Complete | Partner-owned listing CRUD, draft/review/publish lifecycle, pet policy, images/amenities, room types, inventory calendar, partner dashboard/bookings and operational stay transitions |
 | 10/14 | ✅ Source complete | Full frontend design system, in-memory auth client, login/signup, public navigation, reusable travel/UI primitives, role-gated account/partner/admin shells and global UX states |
 | 11/14 | ✅ Source complete | Live database-driven home/search, URL filters, property detail/reviews, auth-aware pet selection, authoritative quote display and idempotent booking confirmation |
-| 12/14 | ⏭️ Next | Account/trips/pets/favourites/reviews plus full partner/admin operational frontend |
-| 13/14 | Planned | Tests, browser verification, Redis-backed distributed rate limits, security hardening, observability |
-| 14/14 | Planned | CI/CD, deployment, migrations, final release verification |
+| 12/14 | ✅ Source complete | Customer trips/pets/favourites/reviews, partner property/inventory/booking operations, admin listing/review moderation, workspace pagination and review-eligibility integration |
+| 13/14 | ⏭️ Next | Clean install/build, unit/integration/E2E tests, browser/accessibility verification, Redis-backed distributed rate limits, security hardening, observability |
+| 14/14 | Planned | CI/CD, deployment, generated migrations, environment configuration and final release verification |
 
-## Phase 11 discovery/booking guarantees
+## Phase 12 workspace guarantees
 
-- Homepage featured stays, destination counts and amenity counts come from public catalogue APIs rather than hard-coded arrays.
-- Hero search sends paired travel dates plus guest and pet counts.
-- /stays is database-driven and uses no-store catalogue-result requests.
-- Search/facet state is represented in the URL and survives sort/pagination navigation.
-- Frontend URL input is validated by the shared propertySearchSchema before a catalogue request.
-- Invalid/incomplete filter state gets an inline search error rather than unrelated fallback results.
-- Multiple amenity filters preserve backend all-of semantics.
-- Search cards preserve the complete filtered search query when opening a property.
-- Property-detail breadcrumbs return to the exact originating search state.
-- Property detail uses the public verified property endpoint and published public-review endpoint.
-- Public detail pages show verified amenities and structured pet policy without making client-side compatibility claims.
-- Approved seeded remote photography uses next/image; unapproved remote image hosts degrade to a safe visual fallback.
-- Public rating count remains distinct from number of locally retrievable review bodies.
-- Anonymous booking CTAs preserve a guarded same-app return path through login/signup.
-- Customer booking UI is available only to USER sessions.
-- Booking pet choices come from the authenticated user's active /pets endpoint.
-- Booking state is cleared when authenticated identity changes.
-- Quote requests send only room/dates/guests/pet IDs; totals are supplied by the backend.
-- Changing any booking input invalidates the current quote.
-- Booking creation resends the booking inputs and relies on the backend to revalidate price, compatibility and inventory transactionally.
-- Browser booking creation uses a stable idempotency key for retries of an unchanged payload.
-- A changed booking payload receives a new idempotency key.
-- Confirmation language represents a reservation, not payment capture.
-- Minimum travel date follows the Asia/Kolkata business calendar used by the backend.
-- Search and detail routes have dedicated content-shaped loading skeletons.
+- Customer workspace routes now cover overview, trips, pets, saved stays and reviews.
+- Customer overview metrics use API pagination totals instead of treating a bounded page as lifetime history.
+- Trip history is paginated and exposes backend lifecycle/pricing snapshots.
+- Customer cancellation calls the existing transactional cancellation endpoint and never manipulates inventory client-side.
+- Completed trips only offer a review action when their one-to-one booking review relation is null.
+- Booking account views now expose review linkage without exposing internal review data.
+- Pet create/edit/archive uses shared schemas and serializes date-only values correctly after browser-side Zod transforms.
+- Pet archive remains non-destructive and historical booking snapshots remain intact.
+- Saved stays can be added/removed directly from property detail and managed from the customer workspace.
+- Favourites continue to use the public verified catalogue boundary.
+- Customer review creation is tied to completed bookings and one-review-per-stay database integrity.
+- Withdrawn reviews remain visible only to their author as history, while staying excluded publicly and from admin moderation.
+- Authored reviews and completed stays used for review creation are independently paginated.
+- Older completed trips opened directly from trip history resolve their specific booking before review creation.
+- Partner dashboard now uses the real Phase 9 operational summary endpoint.
+- Partner bookings are filterable/paginated and expose only guest contact attached to owned reservations.
+- Partner check-in/completion actions call the backend state machine/date gates rather than patching arbitrary status.
+- Partner property portfolio is paginated and supports DRAFT listing creation.
+- Per-property partner operations cover draft metadata, pet policy, image references, amenity claims, room types, inventory calendar, readiness, submission/withdrawal and audit history.
+- Listing claim fields are disabled outside DRAFT; room definitions are disabled during PENDING_REVIEW.
+- Inventory UI never accepts reservedUnits as partner input.
+- Partner rupee inputs are converted to integer paise before API submission.
+- Inventory date inputs validated through transformed shared schemas are serialized back to YYYY-MM-DD.
+- Admin overview derives pending/suspended queue counts from pagination metadata.
+- Admin listing queues are paginated and allow-list initial URL status values.
+- Admin listing review shows partner identity, submitted media, policy, amenities, rooms and lifecycle/verification history.
+- Admin approval/rejection/suspension/restoration uses existing transactional backend endpoints and required decision notes.
+- Admin review queues are paginated/filterable and publish/hide actions use backend moderation transactions.
+- Frontend moderation never calculates or writes rating aggregates directly.
+- Shared workspace pagination is implemented for all bounded operational list surfaces.
+- Internal engineering-phase or placeholder language is absent from user-facing workspace screens.
+- Workspace design remains aligned with the Phase 10 Playfair/DM Sans, coral/beige/sage visual system.
 
 ## Verification note
 
-Phases 10 and 11 are source complete, but frontend runtime verification has not been performed in this execution environment because clean external dependency installation remains unavailable.
+Phases 10, 11 and 12 are source complete, but frontend/runtime verification has not been performed in this execution environment because a clean external dependency install remains unavailable.
 
-The current status therefore does **not** claim that `next build`, browser rendering, end-to-end booking tests or automated accessibility checks have passed.
+The current status therefore does **not** claim that:
 
-Generated Prisma migrations and full release verification remain outstanding.
+- `pnpm install` completed successfully,
+- `next build` passed,
+- the Nest API compiled,
+- Prisma client generation/migrations passed,
+- authenticated browser workflows passed,
+- accessibility automation passed,
+- cross-browser responsive checks passed.
+
+Those checks are the primary objective of Phase 13.
+
+Generated Prisma migrations and final deployment verification remain outstanding for Phase 14.
