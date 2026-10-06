@@ -87,7 +87,6 @@ export class ReviewsService {
   async listMine(userId: string, input: ReviewsQuery) {
     const where: Prisma.ReviewWhereInput = {
       userId,
-      deletedAt: null,
       ...(input.status ? { status: input.status as ReviewStatus } : {}),
     };
     const pagination = toPrismaPagination(input);
