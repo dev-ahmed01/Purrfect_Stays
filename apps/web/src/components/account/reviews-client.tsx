@@ -61,24 +61,21 @@ export function ReviewsClient({ initialBookingId }: { initialBookingId?: string 
     void load();
   }, [load]);
 
-  const reviewedBookingIds = useMemo(
-    () => new Set(reviews.map((review) => review.bookingId)),
-    [reviews],
-  );
-
   const reviewableBookings = useMemo(
-    () => bookings.filter((booking) => !reviewedBookingIds.has(booking.id)),
-    [bookings, reviewedBookingIds],
+    () => bookings.filter((booking) => booking.review === null),
+    [bookings],
   );
 
   useEffect(() => {
     if (
       editor.kind === 'create' &&
-      reviews.some((review) => review.bookingId === editor.bookingId)
+      bookings.some(
+        (booking) => booking.id === editor.bookingId && booking.review !== null,
+      )
     ) {
       setEditor({ kind: 'closed' });
     }
-  }, [editor, reviews]);
+  }, [bookings, editor]);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
