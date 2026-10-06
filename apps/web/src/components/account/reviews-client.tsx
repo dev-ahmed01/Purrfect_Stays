@@ -49,13 +49,29 @@ export function ReviewsClient({ initialBookingId }: { initialBookingId?: string 
       ]);
       setReviews(reviewData.items);
       setMeta(reviewData.meta);
-      setBookings(bookingData.items);
+
+      let completedBookings = bookingData.items;
+      if (
+        initialBookingId &&
+        !completedBookings.some((booking) => booking.id === initialBookingId)
+      ) {
+        try {
+          const linkedBooking = await request<BookingView>('/bookings/' + initialBookingId);
+          if (linkedBooking.status === 'COMPLETED') {
+            completedBookings = [linkedBooking, ...completedBookings];
+          }
+        } catch {
+          // Eligibility is still enforced by the create-review endpoint.
+        }
+      }
+
+      setBookings(completedBookings);
     } catch (requestError) {
       setError(requestError instanceof ApiError ? requestError.message : 'We could not load your reviews.');
     } finally {
       setLoading(false);
     }
-  }, [page, request]);
+  }, [initialBookingId, page, request]);
 
   useEffect(() => {
     void load();
