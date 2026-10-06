@@ -34,6 +34,8 @@ export function ReviewsClient({ initialBookingId }: { initialBookingId?: string 
     initialBookingId ? { kind: 'create', bookingId: initialBookingId } : { kind: 'closed' },
   );
   const [page, setPage] = useState(1);
+  const [completedPage, setCompletedPage] = useState(1);
+  const [completedMeta, setCompletedMeta] = useState<PaginationMeta | null>(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -45,10 +47,13 @@ export function ReviewsClient({ initialBookingId }: { initialBookingId?: string 
     try {
       const [reviewData, bookingData] = await Promise.all([
         request<{ items: MyReview[]; meta: PaginationMeta }>('/reviews?page=' + String(page) + '&pageSize=12'),
-        request<{ items: BookingView[] }>('/bookings?status=COMPLETED&page=1&pageSize=50'),
+        request<{ items: BookingView[]; meta: PaginationMeta }>(
+          '/bookings?status=COMPLETED&page=' + String(completedPage) + '&pageSize=12',
+        ),
       ]);
       setReviews(reviewData.items);
       setMeta(reviewData.meta);
+      setCompletedMeta(bookingData.meta);
 
       let completedBookings = bookingData.items;
       if (
@@ -71,7 +76,7 @@ export function ReviewsClient({ initialBookingId }: { initialBookingId?: string 
     } finally {
       setLoading(false);
     }
-  }, [initialBookingId, page, request]);
+  }, [completedPage, initialBookingId, page, request]);
 
   useEffect(() => {
     void load();
@@ -232,7 +237,7 @@ export function ReviewsClient({ initialBookingId }: { initialBookingId?: string 
         </Card>
       ) : null}
 
-      {reviewableBookings.length > 0 ? (
+      {bookings.length > 0 ? (
         <Card className="reviewable-stays-card">
           <CardBody>
             <div className="workspace-row-heading">
@@ -242,19 +247,26 @@ export function ReviewsClient({ initialBookingId }: { initialBookingId?: string 
               </div>
               <Star size={20} aria-hidden="true" />
             </div>
-            <div className="reviewable-stay-list">
-              {reviewableBookings.map((booking) => (
-                <div key={booking.id}>
-                  <div>
-                    <strong>{booking.property.name}</strong>
-                    <span>{formatDateOnly(booking.checkOut)} · {booking.reference}</span>
+            {reviewableBookings.length > 0 ? (
+              <div className="reviewable-stay-list">
+                {reviewableBookings.map((booking) => (
+                  <div key={booking.id}>
+                    <div>
+                      <strong>{booking.property.name}</strong>
+                      <span>{formatDateOnly(booking.checkOut)} · {booking.reference}</span>
+                    </div>
+                    <Button size="sm" onClick={() => setEditor({ kind: 'create', bookingId: booking.id })}>
+                      Write review
+                    </Button>
                   </div>
-                  <Button size="sm" onClick={() => setEditor({ kind: 'create', bookingId: booking.id })}>
-                    Write review
-                  </Button>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <p className="detail-muted">Every completed stay on this page already has review history.</p>
+            )}
+            {completedMeta ? (
+              <WorkspacePagination meta={completedMeta} onPage={setCompletedPage} />
+            ) : null}
           </CardBody>
         </Card>
       ) : null}
