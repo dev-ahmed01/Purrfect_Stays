@@ -22,10 +22,12 @@ import {
   type QuoteRequest,
 } from '@purrfect/contracts';
 import { CurrentUser } from '../auth/current-user.decorator.js';
+import { Roles } from '../auth/roles.decorator.js';
 import type { AuthenticatedPrincipal } from '../auth/auth.types.js';
 import { ZodValidationPipe } from '../common/validation/zod-validation.pipe.js';
 import { BookingsService } from './bookings.service.js';
 
+@Roles('USER')
 @Controller('bookings')
 export class BookingsController {
   constructor(private readonly bookings: BookingsService) {}
