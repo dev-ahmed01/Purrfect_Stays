@@ -10,6 +10,8 @@ const securityHeaders = [
   },
 ];
 
+const apiProxyOrigin = process.env.API_PROXY_ORIGIN?.replace(/\/+$/, '');
+
 const nextConfig: NextConfig = {
   transpilePackages: ['@purrfect/contracts'],
   images: {
@@ -19,6 +21,16 @@ const nextConfig: NextConfig = {
         hostname: 'images.unsplash.com',
       },
     ],
+  },
+  async rewrites() {
+    if (!apiProxyOrigin) return [];
+
+    return [
+      {
+        source: '/api/v1/:path*',
+        destination: `${apiProxyOrigin}/api/v1/:path*`,
+      },
+    ];
   },
   async headers() {
     return [
