@@ -125,21 +125,75 @@ export type PropertyType = z.infer<typeof propertyTypeSchema>;
 export type FeaturedPropertiesQuery = z.infer<typeof featuredPropertiesQuerySchema>;
 export type DestinationsQuery = z.infer<typeof destinationsQuerySchema>;
 
-export const quoteRequestSchema = z
-  .object({
-    roomTypeId: z.string().uuid(),
-    checkIn: z.coerce.date(),
-    checkOut: z.coerce.date(),
-    guests: z.number().int().positive(),
-    petIds: z.array(z.string().uuid()).min(1),
-  })
-  .refine((value) => value.checkOut > value.checkIn, {
-    message: 'Check-out must be after check-in',
-    path: ['checkOut'],
-  });
+const bookingStayFields = {
+  roomTypeId: z.string().uuid(),
+  checkIn: dateOnlySchema,
+  checkOut: dateOnlySchema,
+  guests: z.coerce.number().int().min(1).max(20),
+  petIds: z
+    .array(z.string().uuid())
+    .min(1)
+    .max(10)
+    .refine((ids) => new Set(ids).size === ids.length, 'Pet IDs must be unique'),
+};
 
-export const createBookingSchema = quoteRequestSchema.extend({
-  idempotencyKey: z.string().min(8).max(128),
+export const quoteRequestSchema = z.object(bookingStayFields).superRefine((value, context) => {
+  if (value.checkOut <= value.checkIn) {
+    context.addIssue({
+      code: 'custom',
+      path: ['checkOut'],
+      message: 'Check-out must be after check-in',
+    });
+  }
+
+  if ((value.checkOut.getTime() - value.checkIn.getTime()) / 86_400_000 > 60) {
+    context.addIssue({
+      code: 'custom',
+      path: ['checkOut'],
+      message: 'Bookings are limited to 60 nights',
+    });
+  }
+});
+
+export const createBookingSchema = z.object(bookingStayFields).superRefine((value, context) => {
+  if (value.checkOut <= value.checkIn) {
+    context.addIssue({
+      code: 'custom',
+      path: ['checkOut'],
+      message: 'Check-out must be after check-in',
+    });
+  }
+
+  if ((value.checkOut.getTime() - value.checkIn.getTime()) / 86_400_000 > 60) {
+    context.addIssue({
+      code: 'custom',
+      path: ['checkOut'],
+      message: 'Bookings are limited to 60 nights',
+    });
+  }
+});
+
+export const idempotencyKeySchema = z
+  .string()
+  .trim()
+  .min(12)
+  .max(128)
+  .regex(/^[A-Za-z0-9._:-]+$/, 'Idempotency-Key contains unsupported characters');
+
+export const cancelBookingSchema = z.object({
+  reason: z.string().trim().min(5).max(500),
+});
+
+export const bookingStatusSchema = z.enum([
+  'PENDING',
+  'CONFIRMED',
+  'CHECKED_IN',
+  'COMPLETED',
+  'CANCELLED',
+]);
+
+export const bookingsQuerySchema = paginationSchema.extend({
+  status: bookingStatusSchema.optional(),
 });
 
 export const createPetSchema = z.object({
@@ -163,6 +217,9 @@ export const createReviewSchema = z.object({
 export type PropertySearchInput = z.infer<typeof propertySearchSchema>;
 export type QuoteRequest = z.infer<typeof quoteRequestSchema>;
 export type CreateBookingInput = z.infer<typeof createBookingSchema>;
+export type CancelBookingInput = z.infer<typeof cancelBookingSchema>;
+export type BookingsQuery = z.infer<typeof bookingsQuerySchema>;
+export type BookingStatus = z.infer<typeof bookingStatusSchema>;
 export type CreatePetInput = z.infer<typeof createPetSchema>;
 export type CreateReviewInput = z.infer<typeof createReviewSchema>;
 
