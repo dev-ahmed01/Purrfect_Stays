@@ -16,12 +16,14 @@ import { EmptyState } from '../ui/empty-state';
 import { FieldFrame, SelectInput, TextArea, TextInput } from '../ui/form-field';
 import { PageHeader } from '../ui/page-header';
 import { StatusBadge } from '../ui/status-badge';
+import { WorkspacePagination } from '../ui/workspace-pagination';
 
 export function PartnerPropertiesClient() {
   const { request } = useAuth();
   const [items, setItems] = useState<PartnerPropertySummary[]>([]);
   const [meta, setMeta] = useState<PaginationMeta | null>(null);
   const [showCreate, setShowCreate] = useState(false);
+  const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -32,7 +34,7 @@ export function PartnerPropertiesClient() {
     setError(null);
     try {
       const data = await request<{ items: PartnerPropertySummary[]; meta: PaginationMeta }>(
-        '/partner/properties?page=1&pageSize=50',
+        '/partner/properties?page=' + String(page) + '&pageSize=12',
       );
       setItems(data.items);
       setMeta(data.meta);
@@ -41,7 +43,7 @@ export function PartnerPropertiesClient() {
     } finally {
       setLoading(false);
     }
-  }, [request]);
+  }, [page, request]);
 
   useEffect(() => {
     void load();
@@ -220,6 +222,7 @@ export function PartnerPropertiesClient() {
           ))}
         </div>
       )}
+      {meta ? <WorkspacePagination meta={meta} onPage={setPage} /> : null}
     </>
   );
 }
