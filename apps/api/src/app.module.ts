@@ -1,6 +1,7 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { AuthModule } from './auth/auth.module.js';
 import { RequestContextModule } from './common/context/request-context.module.js';
 import { AllExceptionsFilter } from './common/http/all-exceptions.filter.js';
@@ -19,10 +20,15 @@ import { HealthModule } from './health/health.module.js';
     }),
     RequestContextModule,
     DatabaseModule,
+    ThrottlerModule.forRoot([{ ttl: 60_000, limit: 120 }]),
     AuthModule,
     HealthModule,
   ],
   providers: [
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
     {
       provide: APP_FILTER,
       useClass: AllExceptionsFilter,
