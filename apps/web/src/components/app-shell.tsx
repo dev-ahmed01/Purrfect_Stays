@@ -3,6 +3,7 @@
 import {
   CalendarDays,
   ChevronRight,
+  Heart,
   Home,
   LogOut,
   PawPrint,
@@ -110,6 +111,8 @@ export const accountNavItems: AppShellNavItem[] = [
   { href: '/account', label: 'Overview', icon: Home },
   { href: '/account/trips', label: 'Trips', icon: CalendarDays },
   { href: '/account/pets', label: 'My Pets', icon: PawPrint },
+  { href: '/account/favourites', label: 'Saved', icon: Heart },
+  { href: '/account/reviews', label: 'Reviews', icon: Star },
 ];
 
 export const partnerNavItems: AppShellNavItem[] = [
