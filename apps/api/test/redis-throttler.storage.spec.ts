@@ -1,3 +1,4 @@
+import { jest } from '@jest/globals';
 import { RedisThrottlerStorage } from '../src/redis/redis-throttler.storage.js';
 
 describe('RedisThrottlerStorage', () => {
