@@ -76,3 +76,27 @@ export function preserveStayContext(
 
   return query.toString();
 }
+
+
+export function catalogueInputFromSearchParams(
+  params: PublicSearchParams,
+): Record<string, string | string[] | undefined> {
+  return {
+    destination: firstParam(params, 'destination'),
+    checkIn: firstParam(params, 'checkIn'),
+    checkOut: firstParam(params, 'checkOut'),
+    guests: firstParam(params, 'guests'),
+    pets: firstParam(params, 'pets'),
+    species: firstParam(params, 'species'),
+    size: firstParam(params, 'size'),
+    breed: firstParam(params, 'breed'),
+    propertyType: firstParam(params, 'propertyType'),
+    minPrice: firstParam(params, 'minPrice'),
+    maxPrice: firstParam(params, 'maxPrice'),
+    minRating: firstParam(params, 'minRating'),
+    amenities: params.amenities,
+    sort: firstParam(params, 'sort'),
+    page: firstParam(params, 'page'),
+    pageSize: firstParam(params, 'pageSize'),
+  };
+}
