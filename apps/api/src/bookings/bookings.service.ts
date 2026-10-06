@@ -115,6 +115,13 @@ export class BookingsService {
           select: bookingViewSelect,
         });
 
+        await tx.bookingInventoryReservation.createMany({
+          data: quote.inventoryRows.map((row) => ({
+            bookingId: booking.id,
+            roomInventoryId: row.id,
+          })),
+        });
+
         return { booking, idempotentReplay: false };
       });
 
@@ -205,22 +212,47 @@ export class BookingsService {
       assertBookingTransition(booking.status, BookingStatus.CANCELLED);
 
       const expectedNights = nightsBetween(booking.checkIn, booking.checkOut);
-      const released = await tx.$executeRaw(Prisma.sql`
-        UPDATE "RoomInventory"
-        SET "reservedUnits" = "reservedUnits" - 1
-        WHERE "roomTypeId" = ${booking.roomType.id}::uuid
-          AND "date" >= ${booking.checkIn}
-          AND "date" < ${booking.checkOut}
-          AND "reservedUnits" > 0
-      `);
+      const reservations = await tx.bookingInventoryReservation.findMany({
+        where: {
+          bookingId: booking.id,
+          releasedAt: null,
+        },
+        select: {
+          roomInventoryId: true,
+        },
+      });
 
-      if (released !== expectedNights) {
+      if (reservations.length !== expectedNights) {
         throw new ConflictException(
-          'Inventory ledger did not match this booking. Cancellation was not applied.',
+          'Inventory reservation ledger did not match this booking. Cancellation was not applied.',
         );
       }
 
+      for (const reservation of reservations) {
+        const released = await tx.$executeRaw(Prisma.sql`
+          UPDATE "RoomInventory"
+          SET "reservedUnits" = "reservedUnits" - 1
+          WHERE "id" = ${reservation.roomInventoryId}::uuid
+            AND "reservedUnits" > 0
+        `);
+
+        if (released !== 1) {
+          throw new ConflictException(
+            'Inventory changed while cancellation was being applied.',
+          );
+        }
+      }
+
       const now = new Date();
+      await tx.bookingInventoryReservation.updateMany({
+        where: {
+          bookingId: booking.id,
+          releasedAt: null,
+        },
+        data: {
+          releasedAt: now,
+        },
+      });
       await tx.bookingStatusEvent.create({
         data: {
           bookingId: booking.id,
