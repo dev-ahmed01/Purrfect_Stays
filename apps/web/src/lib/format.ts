@@ -9,8 +9,12 @@ export function formatInrPaise(amountPaise: number): string {
 export function formatDateOnly(value: string | Date): string {
   const date =
     typeof value === 'string'
-      ? new Date(`${value}T00:00:00.000Z`)
+      ? /^\d{4}-\d{2}-\d{2}$/.test(value)
+        ? new Date(value + 'T00:00:00.000Z')
+        : new Date(value)
       : value;
+
+  if (Number.isNaN(date.getTime())) return 'Invalid date';
 
   return new Intl.DateTimeFormat('en-IN', {
     day: 'numeric',
