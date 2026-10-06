@@ -18,7 +18,8 @@
     "format": "prettier --write .",
     "test:e2e": "playwright test",
     "db:deploy": "pnpm --filter @purrfect/database db:deploy",
-    "db:status": "pnpm --filter @purrfect/database db:status"
+    "db:status": "pnpm --filter @purrfect/database db:status",
+    "smoke:release": "node scripts/release-smoke.mjs"
   },
   "devDependencies": {
     "prettier": "^3.6.2",
