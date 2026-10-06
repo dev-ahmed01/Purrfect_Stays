@@ -1,61 +1,30 @@
 import Link from 'next/link';
 import { DestinationCard } from '../components/destination-card';
-import { PropertyCard, type PropertyCardData } from '../components/property-card';
+import { PropertyCard } from '../components/property-card';
 import { SearchPanel } from '../components/search-panel';
 import { SectionHeading } from '../components/section-heading';
 import { SiteFooter } from '../components/site-footer';
 import { SiteHeader } from '../components/site-header';
+import type {
+  CatalogueFacets,
+  DestinationsResponse,
+  FeaturedPropertiesResponse,
+} from '../lib/catalogue-types';
+import { publicApiGet } from '../lib/public-api';
+import { toPropertyCardData } from '../lib/property-view';
 
-const destinations = [
-  { name: 'Goa', stays: 1, icon: '🏖️' },
-  { name: 'Coorg', stays: 1, icon: '🌿' },
-  { name: 'Ooty', stays: 1, icon: '⛰️' },
-  { name: 'Manali', stays: 1, icon: '🏔️' },
-  { name: 'Jaipur', stays: 1, icon: '🏰' },
-  { name: 'Pondicherry', stays: 1, icon: '🌊' },
-];
+export const dynamic = 'force-dynamic';
 
-const featured: PropertyCardData[] = [
-  {
-    slug: 'the-paw-villa',
-    name: 'The Paw Villa',
-    location: 'Anjuna, Goa',
-    type: 'Villa',
-    pricePaise: 580_000,
-    rating: 4.9,
-    reviewCount: 127,
-    imageUrl:
-      'https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?auto=format&fit=crop&w=1200&q=80',
-    imageAlt: 'The Paw Villa property exterior',
-    tags: ['Pet-friendly', 'Pool', 'Grooming', 'Vet nearby'],
-  },
-  {
-    slug: 'forest-paws-homestay',
-    name: 'Forest Paws Homestay',
-    location: 'Madikeri, Coorg',
-    type: 'Homestay',
-    pricePaise: 340_000,
-    rating: 4.8,
-    reviewCount: 88,
-    imageUrl:
-      'https://images.unsplash.com/photo-1510798831971-661eb04b3739?auto=format&fit=crop&w=1200&q=80',
-    imageAlt: 'Forest Paws Homestay property exterior',
-    tags: ['Pet-friendly', 'Large garden', 'Walking trails'],
-  },
-  {
-    slug: 'snow-peaks-pet-resort',
-    name: 'Snow Peaks Pet Resort',
-    location: 'Old Manali, Himachal Pradesh',
-    type: 'Resort',
-    pricePaise: 720_000,
-    rating: 4.9,
-    reviewCount: 104,
-    imageUrl:
-      'https://images.unsplash.com/photo-1605540436563-5bca919ae766?auto=format&fit=crop&w=1200&q=80',
-    imageAlt: 'Snow Peaks Pet Resort mountain property',
-    tags: ['Pet-friendly', 'Grooming', 'In-house vet'],
-  },
-];
+const destinationIcons: Record<string, string> = {
+  Goa: '🏖️',
+  Madikeri: '🌿',
+  Ooty: '⛰️',
+  Manali: '🏔️',
+  Jaipur: '🏰',
+  Pondicherry: '🌊',
+  Munnar: '🌱',
+  Varkala: '🌴',
+};
 
 const reasons = [
   ['✓', 'Pet-Approved Stays', 'Structured pet policies make the rules clear before you travel.'],
@@ -64,7 +33,25 @@ const reasons = [
   ['📋', 'Verified Facilities', 'Amenity claims are reviewed before they appear as verified publicly.'],
 ];
 
-export default function HomePage() {
+export default async function HomePage() {
+  const [featured, destinations, facets] = await Promise.all([
+    publicApiGet<FeaturedPropertiesResponse>('/properties/featured?limit=3', {
+      revalidate: 60,
+    }),
+    publicApiGet<DestinationsResponse>('/properties/destinations?limit=50', {
+      revalidate: 60,
+    }),
+    publicApiGet<CatalogueFacets>('/properties/facets', {
+      revalidate: 60,
+    }),
+  ]);
+
+  const stayCount = destinations.items.reduce((sum, destination) => sum + destination.stays, 0);
+  const topRating = featured.items.reduce(
+    (highest, property) => Math.max(highest, property.rating),
+    0,
+  );
+
   return (
     <>
       <SiteHeader />
@@ -82,11 +69,11 @@ export default function HomePage() {
             all in one calm booking experience.
           </p>
           <SearchPanel />
-          <div className="hero-stats" aria-label="Current demo catalogue highlights">
-            <div><strong>8</strong><span>Seeded pet-friendly stays</span></div>
-            <div><strong>8</strong><span>Indian destinations</span></div>
-            <div><strong>12</strong><span>Amenity options</span></div>
-            <div><strong>4.9★</strong><span>Top seeded rating</span></div>
+          <div className="hero-stats" aria-label="Current catalogue highlights">
+            <div><strong>{stayCount}</strong><span>Verified stays</span></div>
+            <div><strong>{destinations.items.length}</strong><span>Destinations</span></div>
+            <div><strong>{facets.amenities.length}</strong><span>Verified amenities</span></div>
+            <div><strong>{topRating ? `${topRating.toFixed(1)}★` : '—'}</strong><span>Top rating</span></div>
           </div>
         </section>
 
@@ -97,8 +84,13 @@ export default function HomePage() {
             description="From beaches to mountains — start with a destination and refine by the pet travelling with you."
           />
           <div className="destination-grid">
-            {destinations.map((destination) => (
-              <DestinationCard key={destination.name} {...destination} />
+            {destinations.items.slice(0, 6).map((destination) => (
+              <DestinationCard
+                icon={destinationIcons[destination.city] ?? '🐾'}
+                key={`${destination.city}-${destination.state}`}
+                name={destination.city}
+                stays={destination.stays}
+              />
             ))}
           </div>
         </section>
@@ -107,11 +99,14 @@ export default function HomePage() {
           <SectionHeading
             eyebrow="Top Picks"
             title="Featured Pet-Friendly Stays"
-            description="A curated preview of pet-friendly stays using the same cards throughout search and booking."
+            description="Verified stays selected from the live Purrfect catalogue."
           />
           <div className="property-grid">
-            {featured.map((property) => (
-              <PropertyCard key={property.slug} property={property} />
+            {featured.items.map((property) => (
+              <PropertyCard
+                key={property.slug}
+                property={toPropertyCardData(property)}
+              />
             ))}
           </div>
           <div className="section-action">
