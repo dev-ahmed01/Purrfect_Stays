@@ -31,6 +31,7 @@ test('customer auth, pet, quote, idempotent booking and cancellation', async () 
       },
     });
     expect(register.ok()).toBeTruthy();
+    expect(register.headers()['cache-control']).toContain('no-store');
     const registerBody = await register.json();
     const initialAccessToken = registerBody.data.accessToken as string;
     expect(initialAccessToken).toBeTruthy();
@@ -143,6 +144,8 @@ test('seeded partner/admin role surfaces and dependency readiness are reachable'
       redis: 'up',
     });
 
+    const tokens = new Map<string, string>();
+
     for (const [email, path] of [
       ['partner@purrfect.local', 'partner/dashboard'],
       ['admin@purrfect.local', 'admin/listings?status=PENDING_REVIEW&page=1&pageSize=1'],
@@ -154,15 +157,35 @@ test('seeded partner/admin role surfaces and dependency readiness are reachable'
         },
       });
       expect(login.ok()).toBeTruthy();
+      expect(login.headers()['cache-control']).toContain('no-store');
       const loginBody = await login.json();
+      const token = loginBody.data.accessToken as string;
+      tokens.set(email, token);
 
       const response = await api.get(path, {
         headers: {
-          Authorization: 'Bearer ' + loginBody.data.accessToken,
+          Authorization: 'Bearer ' + token,
         },
       });
       expect(response.ok()).toBeTruthy();
     }
+
+    const partnerMetrics = await api.get('admin/metrics', {
+      headers: {
+        Authorization: 'Bearer ' + tokens.get('partner@purrfect.local'),
+      },
+    });
+    expect(partnerMetrics.status()).toBe(403);
+
+    const adminMetrics = await api.get('admin/metrics', {
+      headers: {
+        Authorization: 'Bearer ' + tokens.get('admin@purrfect.local'),
+      },
+    });
+    expect(adminMetrics.ok()).toBeTruthy();
+    const metricsBody = await adminMetrics.json();
+    expect(metricsBody.data.requests.total).toBeGreaterThan(0);
+    expect(metricsBody.data.requests).not.toHaveProperty('paths');
   } finally {
     await api.dispose();
   }
