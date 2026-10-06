@@ -1,6 +1,7 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
+import { AuthModule } from './auth/auth.module.js';
 import { RequestContextModule } from './common/context/request-context.module.js';
 import { AllExceptionsFilter } from './common/http/all-exceptions.filter.js';
 import { RequestIdMiddleware } from './common/http/request-id.middleware.js';
@@ -18,6 +19,7 @@ import { HealthModule } from './health/health.module.js';
     }),
     RequestContextModule,
     DatabaseModule,
+    AuthModule,
     HealthModule,
   ],
   providers: [
