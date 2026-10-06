@@ -414,6 +414,14 @@ async function main() {
             actorUserId: admin.id,
           },
         },
+        statusEvents: {
+          create: {
+            fromStatus: null,
+            toStatus: PropertyStatus.PUBLISHED,
+            actorUserId: admin.id,
+            reason: 'Published verified demo listing created by seed data.',
+          },
+        },
       },
     });
 
