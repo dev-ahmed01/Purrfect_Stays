@@ -8,9 +8,11 @@ const envSchema = z.object({
   DATABASE_URL: z.string().min(1),
   REDIS_URL: z.string().min(1),
   JWT_ACCESS_SECRET: z.string().min(32),
-  JWT_REFRESH_SECRET: z.string().min(32),
-  JWT_ACCESS_TTL: z.string().default('15m'),
-  JWT_REFRESH_TTL: z.string().default('30d'),
+  JWT_ACCESS_TTL: z.string().regex(/^\d+[smhd]$/).default('15m'),
+  JWT_ISSUER: z.string().min(1).default('purrfect-api'),
+  JWT_AUDIENCE: z.string().min(1).default('purrfect-web'),
+  REFRESH_TOKEN_TTL: z.string().regex(/^\d+[smhd]$/).default('30d'),
+  REFRESH_COOKIE_NAME: z.string().min(1).default('purrfect_refresh'),
 });
 
 export type AppEnv = z.infer<typeof envSchema>;
