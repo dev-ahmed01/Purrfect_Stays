@@ -296,3 +296,215 @@ export type MyReview = {
   createdAt: string;
   updatedAt: string;
 };
+
+
+export type PartnerDashboard = {
+  properties: {
+    total: number;
+    byStatus: Record<string, number>;
+  };
+  stays: {
+    upcomingConfirmed: number;
+    checkedIn: number;
+    arrivalsToday: number;
+    departuresToday: number;
+  };
+  reservationValue: {
+    currency: string;
+    amountPaise: number;
+    note: string;
+  };
+  nextArrivals: PartnerBookingView[];
+  businessDate: string;
+};
+
+export type PartnerBookingView = BookingView & {
+  guest: {
+    id: string;
+    fullName: string;
+    email: string;
+    phone: string | null;
+  };
+};
+
+export type PartnerPropertySummary = {
+  id: string;
+  slug: string;
+  name: string;
+  type: string;
+  status: string;
+  verificationStatus: string;
+  shortDescription: string;
+  city: string;
+  state: string;
+  startingPricePaise: number;
+  startingPrice: Money;
+  featured: boolean;
+  publishedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  _count: {
+    roomTypes: number;
+    images: number;
+    amenities: number;
+    bookings: number;
+  };
+};
+
+export type PartnerPropertyDetail = {
+  id: string;
+  slug: string;
+  name: string;
+  type: string;
+  status: string;
+  verificationStatus: string;
+  shortDescription: string;
+  description: string;
+  addressLine1: string;
+  addressLine2: string | null;
+  locality: string | null;
+  city: string;
+  state: string;
+  country: string;
+  postalCode: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  averageRating: number;
+  reviewCount: number;
+  startingPricePaise: number;
+  startingPrice: Money;
+  featured: boolean;
+  publishedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  petPolicy: null | {
+    maxPets: number;
+    petFeePaise: number;
+    petFeeMode: string;
+    allowsDogs: boolean;
+    allowsCats: boolean;
+    allowsOther: boolean;
+    allowedSizes: string[];
+    allowedBreedKeys: string[];
+    restrictedBreedKeys: string[];
+    requiresVaccination: boolean;
+    notes: string | null;
+    updatedAt: string;
+  };
+  images: Array<{
+    id: string;
+    url: string;
+    altText: string;
+    sortOrder: number;
+    createdAt: string;
+  }>;
+  amenities: Array<{
+    details: string | null;
+    verifiedAt: string | null;
+    amenity: {
+      id: string;
+      slug: string;
+      name: string;
+      category: string;
+      icon: string | null;
+    };
+  }>;
+  roomTypes: Array<{
+    id: string;
+    name: string;
+    description: string | null;
+    capacity: number;
+    totalUnits: number;
+    nightlyRatePaise: number;
+    serviceFeePaise: number;
+    active: boolean;
+    createdAt: string;
+    updatedAt: string;
+    _count: {
+      bookings: number;
+      inventory: number;
+    };
+  }>;
+  statusEvents: Array<{
+    id: string;
+    fromStatus: string | null;
+    toStatus: string;
+    reason: string | null;
+    createdAt: string;
+    actor: null | {
+      id: string;
+      fullName: string;
+      role: string;
+    };
+  }>;
+  verifications: Array<{
+    id: string;
+    status: string;
+    notes: string | null;
+    createdAt: string;
+    actor: null | {
+      id: string;
+      fullName: string;
+      role: string;
+    };
+  }>;
+  _count: {
+    bookings: number;
+    favourites: number;
+    reviews: number;
+  };
+};
+
+export type PartnerAmenity = {
+  id: string;
+  slug: string;
+  name: string;
+  category: string;
+  icon: string | null;
+};
+
+export type InventoryRow = {
+  id: string;
+  date: string;
+  totalUnits: number;
+  reservedUnits: number;
+  nightlyRatePaise: number | null;
+  closed: boolean;
+  availableUnits: number;
+};
+
+export type ListingReadiness = {
+  ready: boolean;
+  missing: string[];
+  checks: {
+    petPolicy: boolean;
+    images: number;
+    activeRoomTypes: number;
+    futureInventoryRows: number;
+  };
+};
+
+export type AdminListingSummary = PartnerPropertySummary & {
+  partner: {
+    id: string;
+    fullName: string;
+    email: string;
+    phone: string | null;
+  };
+};
+
+export type AdminListingDetail = PartnerPropertyDetail & {
+  partner: {
+    id: string;
+    fullName: string;
+    email: string;
+    phone: string | null;
+    city: string | null;
+  };
+};
+
+export type AdminReview = MyReview & {
+  author?: {
+    displayName: string;
+  };
+};
