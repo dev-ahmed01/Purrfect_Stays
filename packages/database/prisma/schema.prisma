@@ -93,6 +93,7 @@ model User {
   verificationActs  PropertyVerification[] @relation("VerificationActor")
   bookingStatusActs  BookingStatusEvent[]   @relation("BookingStatusActor")
   reviewModerationActs Review[]              @relation("ReviewModerator")
+  propertyStatusActs   PropertyStatusEvent[]  @relation("PropertyStatusActor")
 
   @@index([role, status])
 }
@@ -160,7 +161,7 @@ model Property {
   reviewCount        Int                    @default(0)
   ratingBaselineCount Int                   @default(0)
   ratingBaselineTotal Decimal               @default(0) @db.Decimal(14, 2)
-  startingPricePaise Int
+  startingPricePaise Int                    @default(0)
   featured           Boolean                @default(false)
   publishedAt        DateTime?
   createdAt          DateTime               @default(now())
@@ -174,6 +175,7 @@ model Property {
   favourites         Favourite[]
   reviews            Review[]
   verifications      PropertyVerification[]
+  statusEvents       PropertyStatusEvent[]
 
   @@index([status, city])
   @@index([status, type])
@@ -385,6 +387,21 @@ model Review {
 
   @@index([propertyId, status, deletedAt, createdAt])
   @@index([userId, createdAt])
+}
+
+model PropertyStatusEvent {
+  id          String         @id @default(uuid()) @db.Uuid
+  propertyId  String         @db.Uuid
+  fromStatus  PropertyStatus?
+  toStatus    PropertyStatus
+  actorUserId String?        @db.Uuid
+  reason      String?
+  createdAt   DateTime       @default(now())
+  property    Property       @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  actor       User?          @relation("PropertyStatusActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  @@index([propertyId, createdAt])
+  @@index([actorUserId, createdAt])
 }
 
 model PropertyVerification {
