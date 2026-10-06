@@ -416,6 +416,29 @@ const inventoryUpdateSchema = z.object({
   closed: z.boolean().optional(),
 });
 
+export const inventoryCalendarQuerySchema = z
+  .object({
+    from: dateOnlySchema,
+    to: dateOnlySchema,
+  })
+  .superRefine((value, context) => {
+    if (value.to < value.from) {
+      context.addIssue({
+        code: 'custom',
+        path: ['to'],
+        message: 'to must be on or after from',
+      });
+    }
+
+    if ((value.to.getTime() - value.from.getTime()) / 86_400_000 > 366) {
+      context.addIssue({
+        code: 'custom',
+        path: ['to'],
+        message: 'Inventory calendar range is limited to 366 days',
+      });
+    }
+  });
+
 export const updateInventoryCalendarSchema = z
   .object({
     updates: z.array(inventoryUpdateSchema).min(1).max(366),
@@ -478,6 +501,7 @@ export type ReplacePropertyImagesInput = z.infer<typeof replacePropertyImagesSch
 export type ReplacePropertyAmenitiesInput = z.infer<typeof replacePropertyAmenitiesSchema>;
 export type CreateRoomTypeInput = z.infer<typeof createRoomTypeSchema>;
 export type UpdateRoomTypeInput = z.infer<typeof updateRoomTypeSchema>;
+export type InventoryCalendarQuery = z.infer<typeof inventoryCalendarQuerySchema>;
 export type UpdateInventoryCalendarInput = z.infer<typeof updateInventoryCalendarSchema>;
 export type PartnerPropertiesQuery = z.infer<typeof partnerPropertiesQuerySchema>;
 export type PartnerBookingsQuery = z.infer<typeof partnerBookingsQuerySchema>;
