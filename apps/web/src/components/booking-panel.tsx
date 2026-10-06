@@ -36,12 +36,14 @@ export function BookingPanel({
   initialCheckOut,
   initialGuests,
   minDate,
+  returnTo,
 }: {
   property: PropertyDetail;
   initialCheckIn?: string;
   initialCheckOut?: string;
   initialGuests?: string;
   minDate: string;
+  returnTo: string;
 }) {
   const { status, user, request } = useAuth();
   const [pets, setPets] = useState<PetProfile[]>([]);
@@ -58,6 +60,11 @@ export function BookingPanel({
   const idempotencyRef = useRef<{ fingerprint: string; key: string } | null>(null);
 
   useEffect(() => {
+    setSelectedPetIds([]);
+    setQuote(null);
+    setBooking(null);
+    idempotencyRef.current = null;
+
     if (status !== 'authenticated' || user?.role !== 'USER') {
       setPets([]);
       return;
@@ -86,7 +93,7 @@ export function BookingPanel({
     return () => {
       cancelled = true;
     };
-  }, [request, status, user?.role]);
+  }, [request, status, user?.id, user?.role]);
 
   const selectedRoom = useMemo(
     () => property.roomTypes.find((room) => room.id === roomTypeId) ?? null,
@@ -207,7 +214,10 @@ export function BookingPanel({
         <p className="booking-card-copy">
           Sign in to select your saved pets, check policy compatibility and get an authoritative quote.
         </p>
-        <Link className="button button-primary button-full" href="/login">
+        <Link
+          className="button button-primary button-full"
+          href={`/login?returnTo=${encodeURIComponent(returnTo)}`}
+        >
           Sign in to book
         </Link>
       </BookingCardShell>
