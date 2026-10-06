@@ -13,11 +13,13 @@ import { EmptyState } from '../ui/empty-state';
 import { FieldFrame, SelectInput } from '../ui/form-field';
 import { PageHeader } from '../ui/page-header';
 import { StatusBadge } from '../ui/status-badge';
+import { WorkspacePagination } from '../ui/workspace-pagination';
 
 export function AdminListingsClient({ initialStatus }: { initialStatus?: string }) {
   const { request } = useAuth();
   const [items, setItems] = useState<AdminListingSummary[]>([]);
   const [meta, setMeta] = useState<PaginationMeta | null>(null);
+  const [page, setPage] = useState(1);
   const [status, setStatus] = useState(initialStatus ?? 'PENDING_REVIEW');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -25,7 +27,7 @@ export function AdminListingsClient({ initialStatus }: { initialStatus?: string 
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
-    const params = new URLSearchParams({ page: '1', pageSize: '50', status });
+    const params = new URLSearchParams({ page: String(page), pageSize: '12', status });
 
     try {
       const data = await request<{ items: AdminListingSummary[]; meta: PaginationMeta }>(
@@ -38,7 +40,7 @@ export function AdminListingsClient({ initialStatus }: { initialStatus?: string 
     } finally {
       setLoading(false);
     }
-  }, [request, status]);
+  }, [page, request, status]);
 
   useEffect(() => {
     void load();
@@ -55,7 +57,7 @@ export function AdminListingsClient({ initialStatus }: { initialStatus?: string 
       <Card className="workspace-filter-card">
         <CardBody className="workspace-filter-row">
           <FieldFrame label="Listing status">
-            <SelectInput value={status} onChange={(event) => setStatus(event.target.value)}>
+            <SelectInput value={status} onChange={(event) => { setStatus(event.target.value); setPage(1); }}>
               <option value="PENDING_REVIEW">Pending review</option>
               <option value="PUBLISHED">Published</option>
               <option value="SUSPENDED">Suspended</option>
@@ -112,6 +114,7 @@ export function AdminListingsClient({ initialStatus }: { initialStatus?: string 
           ))}
         </div>
       )}
+      {meta ? <WorkspacePagination meta={meta} onPage={setPage} /> : null}
     </>
   );
 }
