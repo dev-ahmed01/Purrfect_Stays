@@ -58,20 +58,22 @@ export function SearchFilters({
         <label className="filter-field">
           <span>Guests</span>
           <input
-            defaultValue={firstParam(params, 'guests') ?? '2'}
+            defaultValue={firstParam(params, 'guests') ?? ''}
             min="1"
             max="20"
             name="guests"
+            placeholder="2"
             type="number"
           />
         </label>
         <label className="filter-field">
           <span>Pets</span>
           <input
-            defaultValue={firstParam(params, 'pets') ?? '1'}
+            defaultValue={firstParam(params, 'pets') ?? ''}
             min="0"
             max="10"
             name="pets"
+            placeholder="1"
             type="number"
           />
         </label>
