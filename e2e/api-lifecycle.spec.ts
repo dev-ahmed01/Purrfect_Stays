@@ -170,14 +170,14 @@ test('seeded partner/admin role surfaces and dependency readiness are reachable'
       expect(response.ok()).toBeTruthy();
     }
 
-    const partnerMetrics = await api.get('admin/metrics', {
+    const partnerMetrics = await api.get('admin/observability/metrics', {
       headers: {
         Authorization: 'Bearer ' + tokens.get('partner@purrfect.local'),
       },
     });
     expect(partnerMetrics.status()).toBe(403);
 
-    const adminMetrics = await api.get('admin/metrics', {
+    const adminMetrics = await api.get('admin/observability/metrics', {
       headers: {
         Authorization: 'Bearer ' + tokens.get('admin@purrfect.local'),
       },
