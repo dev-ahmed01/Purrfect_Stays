@@ -11,3 +11,7 @@ coverage
 .DS_Store
 *.log
 packages/database/prisma/dev.db
+playwright-report/
+test-results/
+api.log
+web.log
