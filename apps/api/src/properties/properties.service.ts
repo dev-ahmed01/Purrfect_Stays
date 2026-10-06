@@ -192,9 +192,17 @@ export class PropertiesService {
     }
 
     const effectivePetCount =
-      input.pets ?? (input.species !== undefined || input.size !== undefined ? 1 : undefined);
+      input.pets ??
+      (input.species !== undefined || input.size !== undefined || input.breed !== undefined
+        ? 1
+        : undefined);
 
-    if (effectivePetCount !== undefined || input.species !== undefined || input.size !== undefined) {
+    if (
+      effectivePetCount !== undefined ||
+      input.species !== undefined ||
+      input.size !== undefined ||
+      input.breed !== undefined
+    ) {
       const policy: Prisma.PetPolicyWhereInput = {};
 
       if (effectivePetCount !== undefined) policy.maxPets = { gte: effectivePetCount };
@@ -202,6 +210,22 @@ export class PropertiesService {
       if (input.species === PetSpecies.CAT) policy.allowsCats = true;
       if (input.species === PetSpecies.OTHER) policy.allowsOther = true;
       if (input.size !== undefined) policy.allowedSizes = { has: input.size as PetSize };
+
+      if (input.breed !== undefined) {
+        policy.AND = [
+          {
+            NOT: {
+              restrictedBreedKeys: { has: input.breed },
+            },
+          },
+          {
+            OR: [
+              { allowedBreedKeys: { isEmpty: true } },
+              { allowedBreedKeys: { has: input.breed } },
+            ],
+          },
+        ];
+      }
 
       and.push({ petPolicy: { is: policy } });
     }
@@ -245,11 +269,13 @@ export class PropertiesService {
         return [
           { startingPricePaise: Prisma.SortOrder.asc },
           { averageRating: Prisma.SortOrder.desc },
+          { name: Prisma.SortOrder.asc },
         ];
       case 'price_desc':
         return [
           { startingPricePaise: Prisma.SortOrder.desc },
           { averageRating: Prisma.SortOrder.desc },
+          { name: Prisma.SortOrder.asc },
         ];
       case 'rating':
         return [
