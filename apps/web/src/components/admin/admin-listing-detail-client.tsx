@@ -130,6 +130,23 @@ export function AdminListingDetailClient({ propertyId }: { propertyId: string })
         </CardBody>
       </Card>
 
+      <Card className="workspace-section-card">
+        <CardHeader title="Submitted media" description="Review the partner-provided HTTPS image references and alt text." />
+        <CardBody>
+          {property.images.length > 0 ? (
+            <div className="admin-media-list">
+              {property.images.map((image) => (
+                <a href={image.url} key={image.id} rel="noreferrer" target="_blank">
+                  <span>Image {image.sortOrder + 1}</span>
+                  <strong>{image.altText}</strong>
+                  <small>{image.url}</small>
+                </a>
+              ))}
+            </div>
+          ) : <p className="detail-muted">No submitted images.</p>}
+        </CardBody>
+      </Card>
+
       <div className="workspace-two-column">
         <Card>
           <CardHeader title="Pet policy" />
