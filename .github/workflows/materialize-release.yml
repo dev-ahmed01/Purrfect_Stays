@@ -8,7 +8,7 @@ on:
       - .github/workflows/materialize-release.yml
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   materialize:
@@ -80,6 +80,18 @@ jobs:
           if [ "$code" -ne 0 ]; then
             exit "$code"
           fi
+
+      - name: Commit validated release artifacts
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add pnpm-lock.yaml packages/database/prisma/migrations
+          if git diff --cached --quiet; then
+            echo "Release artifacts are already committed."
+            exit 0
+          fi
+          git commit -m "release: commit lockfile and baseline migration"
+          git push
 
       - name: Upload release artifacts
         uses: actions/upload-artifact@v4
