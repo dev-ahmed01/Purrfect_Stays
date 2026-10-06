@@ -56,9 +56,9 @@ export class PropertiesService {
         featured: true,
       },
       orderBy: [
-        { averageRating: Prisma.SortOrder.desc },
-        { reviewCount: Prisma.SortOrder.desc },
-        { name: Prisma.SortOrder.asc },
+        { averageRating: 'desc' },
+        { reviewCount: 'desc' },
+        { name: 'asc' },
       ],
       take: input.limit,
       select: propertySummarySelect,
@@ -155,10 +155,10 @@ export class PropertiesService {
     if (input.destination) {
       and.push({
         OR: [
-          { city: { contains: input.destination, mode: Prisma.QueryMode.insensitive } },
-          { state: { contains: input.destination, mode: Prisma.QueryMode.insensitive } },
-          { locality: { contains: input.destination, mode: Prisma.QueryMode.insensitive } },
-          { name: { contains: input.destination, mode: Prisma.QueryMode.insensitive } },
+          { city: { contains: input.destination, mode: 'insensitive' } },
+          { state: { contains: input.destination, mode: 'insensitive' } },
+          { locality: { contains: input.destination, mode: 'insensitive' } },
+          { name: { contains: input.destination, mode: 'insensitive' } },
         ],
       });
     }
@@ -267,29 +267,29 @@ export class PropertiesService {
     switch (sort) {
       case 'price_asc':
         return [
-          { startingPricePaise: Prisma.SortOrder.asc },
-          { averageRating: Prisma.SortOrder.desc },
-          { name: Prisma.SortOrder.asc },
+          { startingPricePaise: 'asc' },
+          { averageRating: 'desc' },
+          { name: 'asc' },
         ];
       case 'price_desc':
         return [
-          { startingPricePaise: Prisma.SortOrder.desc },
-          { averageRating: Prisma.SortOrder.desc },
-          { name: Prisma.SortOrder.asc },
+          { startingPricePaise: 'desc' },
+          { averageRating: 'desc' },
+          { name: 'asc' },
         ];
       case 'rating':
         return [
-          { averageRating: Prisma.SortOrder.desc },
-          { reviewCount: Prisma.SortOrder.desc },
-          { name: Prisma.SortOrder.asc },
+          { averageRating: 'desc' },
+          { reviewCount: 'desc' },
+          { name: 'asc' },
         ];
       case 'recommended':
       default:
         return [
-          { featured: Prisma.SortOrder.desc },
-          { averageRating: Prisma.SortOrder.desc },
-          { reviewCount: Prisma.SortOrder.desc },
-          { name: Prisma.SortOrder.asc },
+          { featured: 'desc' },
+          { averageRating: 'desc' },
+          { reviewCount: 'desc' },
+          { name: 'asc' },
         ];
     }
   }
