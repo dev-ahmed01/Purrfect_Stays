@@ -34,6 +34,11 @@ export function mapBooking(booking: {
     id: string;
     name: string;
   };
+  review: {
+    id: string;
+    status: string;
+    deletedAt: Date | null;
+  } | null;
   pets: Array<{
     petId: string | null;
     name: string;
@@ -67,6 +72,13 @@ export function mapBooking(booking: {
       heroImage: booking.property.images[0] ?? null,
     },
     roomType: booking.roomType,
+    review: booking.review
+      ? {
+          id: booking.review.id,
+          status: booking.review.status,
+          deletedAt: booking.review.deletedAt,
+        }
+      : null,
     pets: booking.pets,
     pricing: {
       currency: booking.currency,
