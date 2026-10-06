@@ -210,3 +210,89 @@ export type BookingCreateResult = {
   };
   idempotentReplay: boolean;
 };
+
+
+export type BookingView = {
+  id: string;
+  reference: string;
+  status: string;
+  checkIn: string;
+  checkOut: string;
+  nights: number;
+  guests: number;
+  petCount: number;
+  property: {
+    id: string;
+    slug: string;
+    name: string;
+    city: string;
+    state: string;
+    heroImage: {
+      url: string;
+      altText: string;
+    } | null;
+  };
+  roomType: {
+    id: string;
+    name: string;
+  };
+  pets: Array<{
+    petId: string | null;
+    name: string;
+    species: string;
+    breed: string;
+    size: string;
+  }>;
+  pricing: {
+    currency: string;
+    subtotalPaise: number;
+    petFeePaise: number;
+    serviceFeePaise: number;
+    taxRateBps: number;
+    taxPaise: number;
+    discountPaise: number;
+    totalPaise: number;
+  };
+  lifecycle: {
+    confirmedAt: string | null;
+    checkedInAt: string | null;
+    completedAt: string | null;
+    cancelledAt: string | null;
+    cancellationReason: string | null;
+  };
+  statusEvents: Array<{
+    id: string;
+    fromStatus: string | null;
+    toStatus: string;
+    reason: string | null;
+    createdAt: string;
+  }>;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type MyReview = {
+  id: string;
+  bookingId: string;
+  rating: number;
+  title: string;
+  body: string;
+  status: string;
+  property?: {
+    id: string;
+    slug: string;
+    name: string;
+    city: string;
+    state: string;
+  };
+  booking?: {
+    reference: string;
+  };
+  moderation: {
+    note: string | null;
+    moderatedAt: string | null;
+  };
+  deletedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
