@@ -91,6 +91,7 @@ model User {
   partnerProperties Property[]          @relation("PartnerProperties")
   refreshSessions   RefreshSession[]
   verificationActs  PropertyVerification[] @relation("VerificationActor")
+  bookingStatusActs  BookingStatusEvent[]   @relation("BookingStatusActor")
 
   @@index([role, status])
 }
@@ -265,7 +266,8 @@ model RoomInventory {
 model Booking {
   id                 String        @id @default(uuid()) @db.Uuid
   reference          String        @unique
-  idempotencyKey     String        @unique
+  idempotencyKey     String
+  requestHash        String
   userId             String        @db.Uuid
   propertyId         String        @db.Uuid
   roomTypeId         String        @db.Uuid
@@ -280,8 +282,12 @@ model Booking {
   serviceFeePaise    Int
   taxPaise           Int
   discountPaise      Int           @default(0)
+  taxRateBps         Int
   totalPaise         Int
   status             BookingStatus @default(PENDING)
+  confirmedAt        DateTime?
+  checkedInAt        DateTime?
+  completedAt        DateTime?
   cancellationReason String?
   cancelledAt        DateTime?
   createdAt          DateTime      @default(now())
@@ -291,10 +297,27 @@ model Booking {
   roomType           RoomType      @relation(fields: [roomTypeId], references: [id], onDelete: Restrict)
   pets               BookingPet[]
   review             Review?
+  statusEvents       BookingStatusEvent[]
 
+  @@unique([userId, idempotencyKey])
   @@index([userId, status, checkIn])
   @@index([propertyId, status, checkIn])
   @@index([roomTypeId, checkIn, checkOut])
+}
+
+model BookingStatusEvent {
+  id          String         @id @default(uuid()) @db.Uuid
+  bookingId   String         @db.Uuid
+  fromStatus  BookingStatus?
+  toStatus    BookingStatus
+  actorUserId String?        @db.Uuid
+  reason      String?
+  createdAt   DateTime       @default(now())
+  booking     Booking        @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  actor       User?          @relation("BookingStatusActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  @@index([bookingId, createdAt])
+  @@index([actorUserId, createdAt])
 }
 
 model BookingPet {
