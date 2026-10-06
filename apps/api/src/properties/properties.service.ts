@@ -42,6 +42,8 @@ export class PropertiesService {
       meta: buildPaginationMeta(input, totalItems),
       query: {
         ...input,
+        checkIn: input.checkIn?.toISOString().slice(0, 10),
+        checkOut: input.checkOut?.toISOString().slice(0, 10),
         availabilityChecked: Boolean(input.checkIn && input.checkOut),
       },
     };
@@ -158,7 +160,10 @@ export class PropertiesService {
     for (const slug of input.amenities ?? []) {
       and.push({
         amenities: {
-          some: { amenity: { slug } },
+          some: {
+            verifiedAt: { not: null },
+            amenity: { slug },
+          },
         },
       });
     }
