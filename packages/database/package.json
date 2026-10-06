@@ -18,7 +18,9 @@
     "db:migrate": "prisma migrate dev",
     "db:seed": "tsx prisma/seed.ts",
     "db:push": "prisma db push --skip-generate",
-    "dev": "prisma generate && tsc -p tsconfig.build.json --watch --preserveWatchOutput"
+    "dev": "prisma generate && tsc -p tsconfig.build.json --watch --preserveWatchOutput",
+    "db:deploy": "prisma migrate deploy",
+    "db:status": "prisma migrate status"
   },
   "dependencies": {
     "@prisma/client": "^6.16.3",
