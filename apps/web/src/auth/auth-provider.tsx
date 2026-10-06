@@ -11,7 +11,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { API_BASE_URL } from '../lib/api-config';
+import { BROWSER_BROWSER_API_BASE_URL } from '../lib/api-config';
 import { ApiError, type ApiFailure, type ApiSuccess } from '../lib/api-types';
 
 type AuthPayload = {
@@ -82,7 +82,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const operation = (async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
+        const response = await fetch(`${BROWSER_API_BASE_URL}/auth/refresh`, {
           method: 'POST',
           credentials: 'include',
           headers: {
@@ -138,7 +138,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
         if (token) requestHeaders.set('Authorization', `Bearer ${token}`);
 
-        return fetch(`${API_BASE_URL}${path.startsWith('/') ? path : `/${path}`}`, {
+        return fetch(`${BROWSER_API_BASE_URL}${path.startsWith('/') ? path : `/${path}`}`, {
           ...init,
           credentials: 'include',
           headers: requestHeaders,
@@ -162,7 +162,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(
     async (input: LoginInput) => {
-      const response = await fetch(`${API_BASE_URL}/auth/login`, {
+      const response = await fetch(`${BROWSER_API_BASE_URL}/auth/login`, {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -180,7 +180,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const register = useCallback(
     async (input: RegisterInput) => {
-      const response = await fetch(`${API_BASE_URL}/auth/register`, {
+      const response = await fetch(`${BROWSER_API_BASE_URL}/auth/register`, {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -198,7 +198,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(async () => {
     try {
-      await fetch(`${API_BASE_URL}/auth/logout`, {
+      await fetch(`${BROWSER_API_BASE_URL}/auth/logout`, {
         method: 'POST',
         credentials: 'include',
         headers: {
