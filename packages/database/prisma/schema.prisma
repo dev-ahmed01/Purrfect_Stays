@@ -1,0 +1,346 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  USER
+  PARTNER
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+}
+
+enum PetSpecies {
+  DOG
+  CAT
+  OTHER
+}
+
+enum PetSize {
+  SMALL
+  MEDIUM
+  LARGE
+  EXTRA_LARGE
+}
+
+enum PropertyType {
+  VILLA
+  HOMESTAY
+  RESORT
+  HOTEL
+  COTTAGE
+  APARTMENT
+}
+
+enum PropertyStatus {
+  DRAFT
+  PENDING_REVIEW
+  PUBLISHED
+  SUSPENDED
+}
+
+enum VerificationStatus {
+  UNVERIFIED
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+enum PetFeeMode {
+  PER_STAY
+  PER_NIGHT
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CHECKED_IN
+  COMPLETED
+  CANCELLED
+}
+
+enum ReviewStatus {
+  PENDING
+  PUBLISHED
+  HIDDEN
+}
+
+model User {
+  id                String              @id @default(uuid()) @db.Uuid
+  email             String              @unique
+  phone             String?             @unique
+  passwordHash      String
+  fullName          String
+  city              String?
+  role              UserRole            @default(USER)
+  status            UserStatus          @default(ACTIVE)
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  pets              Pet[]
+  bookings          Booking[]
+  favourites        Favourite[]
+  reviews           Review[]
+  partnerProperties Property[]          @relation("PartnerProperties")
+  refreshSessions   RefreshSession[]
+  verificationActs  PropertyVerification[] @relation("VerificationActor")
+
+  @@index([role, status])
+}
+
+model RefreshSession {
+  id         String    @id @default(uuid()) @db.Uuid
+  userId     String    @db.Uuid
+  tokenHash  String    @unique
+  expiresAt  DateTime
+  revokedAt  DateTime?
+  userAgent  String?
+  ipAddress  String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, expiresAt])
+}
+
+model Pet {
+  id           String     @id @default(uuid()) @db.Uuid
+  userId       String     @db.Uuid
+  name         String
+  species      PetSpecies
+  breed        String
+  size         PetSize
+  weightKg     Decimal?   @db.Decimal(5, 2)
+  birthDate    DateTime?  @db.Date
+  vaccinated   Boolean    @default(false)
+  specialNeeds String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bookingPets  BookingPet[]
+
+  @@index([userId])
+}
+
+model Property {
+  id                 String                 @id @default(uuid()) @db.Uuid
+  partnerId          String                 @db.Uuid
+  slug               String                 @unique
+  name               String
+  type               PropertyType
+  status             PropertyStatus         @default(DRAFT)
+  verificationStatus VerificationStatus     @default(UNVERIFIED)
+  shortDescription   String
+  description        String
+  addressLine1       String
+  addressLine2       String?
+  locality           String?
+  city               String
+  state              String
+  country            String                 @default("India")
+  postalCode         String?
+  latitude           Decimal?               @db.Decimal(9, 6)
+  longitude          Decimal?               @db.Decimal(9, 6)
+  averageRating      Decimal                @default(0) @db.Decimal(3, 2)
+  reviewCount        Int                    @default(0)
+  featured           Boolean                @default(false)
+  publishedAt        DateTime?
+  createdAt          DateTime               @default(now())
+  updatedAt          DateTime               @updatedAt
+  partner            User                   @relation("PartnerProperties", fields: [partnerId], references: [id], onDelete: Restrict)
+  petPolicy          PetPolicy?
+  images             PropertyImage[]
+  amenities          PropertyAmenity[]
+  roomTypes          RoomType[]
+  bookings           Booking[]
+  favourites         Favourite[]
+  reviews            Review[]
+  verifications      PropertyVerification[]
+
+  @@index([status, city])
+  @@index([status, type])
+  @@index([featured, status])
+  @@index([verificationStatus, status])
+}
+
+model PetPolicy {
+  id                  String      @id @default(uuid()) @db.Uuid
+  propertyId          String      @unique @db.Uuid
+  maxPets             Int         @default(1)
+  petFeePaise         Int         @default(0)
+  petFeeMode          PetFeeMode  @default(PER_STAY)
+  allowsDogs          Boolean     @default(true)
+  allowsCats          Boolean     @default(true)
+  allowsOther         Boolean     @default(false)
+  allowedSizes        PetSize[]
+  requiresVaccination Boolean     @default(false)
+  notes               String?
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
+  property            Property    @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+}
+
+model PropertyImage {
+  id         String   @id @default(uuid()) @db.Uuid
+  propertyId String   @db.Uuid
+  url        String
+  altText    String
+  sortOrder  Int      @default(0)
+  createdAt  DateTime @default(now())
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@index([propertyId, sortOrder])
+}
+
+model Amenity {
+  id         String            @id @default(uuid()) @db.Uuid
+  slug       String            @unique
+  name       String
+  category   String
+  icon       String?
+  properties PropertyAmenity[]
+}
+
+model PropertyAmenity {
+  propertyId String    @db.Uuid
+  amenityId  String    @db.Uuid
+  details    String?
+  verifiedAt DateTime?
+  property   Property  @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  amenity    Amenity   @relation(fields: [amenityId], references: [id], onDelete: Cascade)
+
+  @@id([propertyId, amenityId])
+  @@index([amenityId])
+}
+
+model RoomType {
+  id                 String          @id @default(uuid()) @db.Uuid
+  propertyId         String          @db.Uuid
+  name               String
+  description        String?
+  capacity           Int
+  totalUnits         Int             @default(1)
+  nightlyRatePaise   Int
+  serviceFeePaise    Int             @default(0)
+  active             Boolean         @default(true)
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+  property           Property        @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  inventory          RoomInventory[]
+  bookings           Booking[]
+
+  @@index([propertyId, active])
+}
+
+model RoomInventory {
+  id                 String   @id @default(uuid()) @db.Uuid
+  roomTypeId         String   @db.Uuid
+  date               DateTime @db.Date
+  totalUnits         Int
+  reservedUnits      Int      @default(0)
+  nightlyRatePaise   Int?
+  closed             Boolean  @default(false)
+  roomType           RoomType @relation(fields: [roomTypeId], references: [id], onDelete: Cascade)
+
+  @@unique([roomTypeId, date])
+  @@index([date, closed])
+}
+
+model Booking {
+  id                 String        @id @default(uuid()) @db.Uuid
+  reference          String        @unique
+  idempotencyKey     String        @unique
+  userId             String        @db.Uuid
+  propertyId         String        @db.Uuid
+  roomTypeId         String        @db.Uuid
+  checkIn            DateTime      @db.Date
+  checkOut           DateTime      @db.Date
+  nights             Int
+  guests             Int
+  petCount           Int
+  currency           String        @default("INR")
+  subtotalPaise      Int
+  petFeePaise        Int
+  serviceFeePaise    Int
+  taxPaise           Int
+  discountPaise      Int           @default(0)
+  totalPaise         Int
+  status             BookingStatus @default(PENDING)
+  cancellationReason String?
+  cancelledAt        DateTime?
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+  user               User          @relation(fields: [userId], references: [id], onDelete: Restrict)
+  property           Property      @relation(fields: [propertyId], references: [id], onDelete: Restrict)
+  roomType           RoomType      @relation(fields: [roomTypeId], references: [id], onDelete: Restrict)
+  pets               BookingPet[]
+  review             Review?
+
+  @@index([userId, status, checkIn])
+  @@index([propertyId, status, checkIn])
+  @@index([roomTypeId, checkIn, checkOut])
+}
+
+model BookingPet {
+  id        String     @id @default(uuid()) @db.Uuid
+  bookingId String     @db.Uuid
+  petId     String?    @db.Uuid
+  name      String
+  species   PetSpecies
+  breed     String
+  size      PetSize
+  booking   Booking    @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  pet       Pet?       @relation(fields: [petId], references: [id], onDelete: SetNull)
+
+  @@index([bookingId])
+}
+
+model Favourite {
+  userId     String   @db.Uuid
+  propertyId String   @db.Uuid
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@id([userId, propertyId])
+  @@index([propertyId])
+}
+
+model Review {
+  id         String       @id @default(uuid()) @db.Uuid
+  bookingId  String       @unique @db.Uuid
+  userId     String       @db.Uuid
+  propertyId String       @db.Uuid
+  rating     Int
+  title      String
+  body       String
+  status     ReviewStatus @default(PENDING)
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  booking    Booking      @relation(fields: [bookingId], references: [id], onDelete: Restrict)
+  user       User         @relation(fields: [userId], references: [id], onDelete: Restrict)
+  property   Property     @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@index([propertyId, status, createdAt])
+  @@index([userId, createdAt])
+}
+
+model PropertyVerification {
+  id           String             @id @default(uuid()) @db.Uuid
+  propertyId   String             @db.Uuid
+  status       VerificationStatus
+  notes        String?
+  actorUserId  String?            @db.Uuid
+  createdAt    DateTime           @default(now())
+  property     Property           @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  actor        User?              @relation("VerificationActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  @@index([propertyId, createdAt])
+}
