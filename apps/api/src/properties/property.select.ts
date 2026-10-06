@@ -52,6 +52,8 @@ export const propertySummarySelect = {
       allowsCats: true,
       allowsOther: true,
       allowedSizes: true,
+      allowedBreedKeys: true,
+      restrictedBreedKeys: true,
       requiresVaccination: true,
       notes: true,
     },
