@@ -130,7 +130,7 @@ export function TripsClient() {
                   <Link className="button button-outline button-sm" href={'/stays/' + booking.property.slug}>
                     View property
                   </Link>
-                  {booking.status === 'COMPLETED' ? (
+                  {booking.status === 'COMPLETED' && booking.review === null ? (
                     <Link className="button button-primary button-sm" href={'/account/reviews?bookingId=' + booking.id}>
                       Review stay
                     </Link>
