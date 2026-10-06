@@ -12,11 +12,13 @@ import {
   Res,
   UnauthorizedException,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { loginSchema, registerSchema, type LoginInput, type RegisterInput } from '@purrfect/contracts';
 import type { Request, Response } from 'express';
 import { ZodValidationPipe } from '../common/validation/zod-validation.pipe.js';
+import { NoStoreInterceptor } from '../common/http/no-store.interceptor.js';
 import { AuthCookieService } from './auth-cookie.service.js';
 import { BrowserOriginGuard } from './browser-origin.guard.js';
 import { AuthService } from './auth.service.js';
@@ -28,6 +30,7 @@ type RequestWithCookies = Request & {
   cookies?: Record<string, unknown>;
 };
 
+@UseInterceptors(NoStoreInterceptor)
 @Controller('auth')
 export class AuthController {
   constructor(
