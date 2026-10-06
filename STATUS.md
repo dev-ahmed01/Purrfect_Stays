@@ -1,6 +1,6 @@
 # Build Status
 
-Current engineering milestone: **6/14 complete — Booking & pricing next**
+Current engineering milestone: **7/14 complete — Pets, favourites & reviews next**
 
 | Phase | Status | Scope |
 |---|---|---|
@@ -10,32 +10,45 @@ Current engineering milestone: **6/14 complete — Booking & pricing next**
 | 4/14 | ✅ Complete | Prisma lifecycle, serializable transaction helper, request IDs/context, structured errors, Zod pipe, pagination, logging, database readiness |
 | 5/14 | ✅ Complete | Argon2id auth, access JWTs, opaque refresh rotation/replay detection, HttpOnly cookies, session revocation, deny-by-default auth and RBAC |
 | 6/14 | ✅ Complete | Verified property catalogue, destination/search filters, breed/species/size compatibility, verified amenities, indexed price sorting, date-range availability discovery and facets |
-| 7/14 | ⏭️ Next | Authoritative availability, quote engine, idempotent booking creation, inventory reservation, cancellation and booking lifecycle |
-| 8/14 | Planned | Pets, favourites and reviews |
-| 9/14 | Planned | Partner/property-management backend |
+| 7/14 | ✅ Complete | Authoritative quote engine, pet ownership/policy validation, date-level pricing, per-user idempotency, serializable inventory reservation, nightly reservation ledger, cancellation and lifecycle audit |
+| 8/14 | ⏭️ Next | Pet-profile CRUD, favourites and verified-stay reviews |
+| 9/14 | Planned | Partner/property-management backend and operational booking transitions |
 | 10/14 | Planned | Full frontend design system and application shell |
 | 11/14 | Planned | Discovery/search/detail/booking frontend |
 | 12/14 | Planned | Account/trips/pets/partner frontend |
 | 13/14 | Planned | Tests, Redis-backed distributed rate limits, security hardening, observability |
 | 14/14 | Planned | CI/CD, deployment, migrations, final release verification |
 
-## Phase 6 catalogue guarantees
+## Phase 7 booking guarantees
 
-- Public catalogue queries return only PUBLISHED + VERIFIED properties.
-- A public listing must have a structured pet policy and at least one active room type.
-- Public amenity data must be verified; unverified partner claims do not satisfy filters.
-- Destination, type, rating, price, amenity, guest and pet filters are validated and database-backed.
-- Multiple requested amenities use all-of semantics.
-- Pet compatibility supports species, size, pet count and normalized breed allow/restriction rules.
-- Price sorting uses an indexed integer-paise starting-price field rather than loading and sorting all room types in application memory.
-- Date searches are validated as calendar dates, paired check-in/check-out values, capped at 60 nights and checked against same-room inventory for every requested night.
-- Search availability remains advisory; no search request reserves inventory.
-- Search pagination is bounded and deterministic.
-- Featured destinations and filter facets are driven from PostgreSQL rather than static frontend arrays.
-- Property detail responses exclude partner/internal operational fields.
+- Customer booking endpoints are restricted to authenticated USER accounts.
+- Quote and booking inputs use validated date-only travel dates and unique owned pet IDs.
+- Quotes validate room/property eligibility, guest capacity, pet ownership and full structured pet compatibility.
+- Final nightly price uses date-level inventory overrides when present.
+- Pet fees respect PER_STAY versus PER_NIGHT policy modes.
+- Tax is calculated from a configurable basis-point rule and persisted as a booking snapshot.
+- The frontend never supplies authoritative totals.
+- Booking creation re-runs the complete quote/availability logic inside a SERIALIZABLE transaction.
+- Inventory is incremented conditionally, preventing oversell at the write boundary.
+- Idempotency is scoped per user and backed by a request fingerprint.
+- Same-key/same-request replay returns the original booking without a second reservation.
+- Same-key/different-request reuse fails with conflict.
+- Every reserved night has a BookingInventoryReservation ownership row.
+- Customer cancellation releases only that booking's unreleased nightly ledger rows.
+- Cancellation and booking status changes append immutable BookingStatusEvent audit records.
+- Invalid booking-state transitions are rejected by a shared state machine.
+- Booking/pet data is snapshotted for historical integrity.
+- Customer booking reads are ownership-scoped and paginated.
+- India calendar rules use Asia/Kolkata rather than the deployment host timezone.
+
+## Product semantics
+
+A newly created booking currently enters CONFIRMED after successful inventory reservation. CONFIRMED means the reservation is confirmed; it does not assert that any external payment has been captured.
+
+Payment-provider integration is not represented as implemented.
 
 ## Verification note
 
 The repository source is being committed directly to GitHub. This execution environment cannot currently perform a clean external package install from npm, so runtime build/test verification remains pending. Source completion is not represented as a passed runtime verification.
 
-A generated Prisma migration for the accumulated schema changes remains part of the release/deployment verification work. Phase 7 will make booking inventory checks authoritative inside serializable transactions rather than relying on discovery search state.
+The accumulated Prisma schema changes still require generated migrations during the release/deployment verification phase.
