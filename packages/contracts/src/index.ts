@@ -196,22 +196,69 @@ export const bookingsQuerySchema = paginationSchema.extend({
   status: bookingStatusSchema.optional(),
 });
 
-export const createPetSchema = z.object({
+const petProfileFields = {
   name: z.string().trim().min(1).max(80),
   species: petSpeciesSchema,
   breed: z.string().trim().min(1).max(120),
   size: petSizeSchema,
-  weightKg: z.number().positive().max(200).optional(),
-  birthDate: z.coerce.date().optional(),
-  vaccinated: z.boolean().default(false),
+  weightKg: z.coerce.number().positive().max(200).optional(),
+  birthDate: dateOnlySchema.optional(),
+  vaccinated: z.boolean(),
   specialNeeds: z.string().trim().max(1000).optional(),
+};
+
+export const createPetSchema = z.object({
+  ...petProfileFields,
+  vaccinated: z.boolean().default(false),
 });
+
+export const updatePetSchema = z
+  .object({
+    name: petProfileFields.name.optional(),
+    species: petProfileFields.species.optional(),
+    breed: petProfileFields.breed.optional(),
+    size: petProfileFields.size.optional(),
+    weightKg: petProfileFields.weightKg,
+    birthDate: petProfileFields.birthDate,
+    vaccinated: petProfileFields.vaccinated.optional(),
+    specialNeeds: petProfileFields.specialNeeds,
+  })
+  .refine((value) => Object.values(value).some((item) => item !== undefined), {
+    message: 'At least one pet field must be provided',
+  });
+
+const reviewContentFields = {
+  rating: z.coerce.number().int().min(1).max(5),
+  title: z.string().trim().min(1).max(120),
+  body: z.string().trim().min(10).max(3000),
+};
 
 export const createReviewSchema = z.object({
   bookingId: z.string().uuid(),
-  rating: z.number().int().min(1).max(5),
-  title: z.string().trim().min(1).max(120),
-  body: z.string().trim().min(10).max(3000),
+  ...reviewContentFields,
+});
+
+export const updateReviewSchema = z
+  .object({
+    rating: reviewContentFields.rating.optional(),
+    title: reviewContentFields.title.optional(),
+    body: reviewContentFields.body.optional(),
+  })
+  .refine((value) => Object.values(value).some((item) => item !== undefined), {
+    message: 'At least one review field must be provided',
+  });
+
+export const reviewsQuerySchema = paginationSchema.extend({
+  status: z.enum(['PENDING', 'PUBLISHED', 'HIDDEN']).optional(),
+});
+
+export const publicReviewsQuerySchema = paginationSchema.extend({
+  sort: z.enum(['recent', 'rating_high', 'rating_low']).default('recent'),
+});
+
+export const moderateReviewSchema = z.object({
+  status: z.enum(['PUBLISHED', 'HIDDEN']),
+  note: z.string().trim().min(3).max(500).optional(),
 });
 
 export type PropertySearchInput = z.infer<typeof propertySearchSchema>;
@@ -221,7 +268,12 @@ export type CancelBookingInput = z.infer<typeof cancelBookingSchema>;
 export type BookingsQuery = z.infer<typeof bookingsQuerySchema>;
 export type BookingStatus = z.infer<typeof bookingStatusSchema>;
 export type CreatePetInput = z.infer<typeof createPetSchema>;
+export type UpdatePetInput = z.infer<typeof updatePetSchema>;
 export type CreateReviewInput = z.infer<typeof createReviewSchema>;
+export type UpdateReviewInput = z.infer<typeof updateReviewSchema>;
+export type ReviewsQuery = z.infer<typeof reviewsQuerySchema>;
+export type PublicReviewsQuery = z.infer<typeof publicReviewsQuerySchema>;
+export type ModerateReviewInput = z.infer<typeof moderateReviewSchema>;
 
 
 const passwordSchema = z
