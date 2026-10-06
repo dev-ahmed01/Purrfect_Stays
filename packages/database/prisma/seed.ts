@@ -369,7 +369,7 @@ async function main() {
       image:
         'https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?auto=format&fit=crop&w=1600&q=80',
     },
-  ] as const;
+  ];
 
   const createdProperties = new Map<string, { id: string; roomTypeId: string }>();
 
