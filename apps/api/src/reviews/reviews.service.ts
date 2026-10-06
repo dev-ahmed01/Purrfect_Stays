@@ -350,21 +350,34 @@ export class ReviewsService {
     tx: Prisma.TransactionClient,
     propertyId: string,
   ) {
-    const aggregate = await tx.review.aggregate({
-      where: {
-        propertyId,
-        status: ReviewStatus.PUBLISHED,
-        deletedAt: null,
-      },
-      _avg: { rating: true },
-      _count: { _all: true },
-    });
+    const [property, aggregate] = await Promise.all([
+      tx.property.findUniqueOrThrow({
+        where: { id: propertyId },
+        select: {
+          ratingBaselineCount: true,
+          ratingBaselineTotal: true,
+        },
+      }),
+      tx.review.aggregate({
+        where: {
+          propertyId,
+          status: ReviewStatus.PUBLISHED,
+          deletedAt: null,
+        },
+        _sum: { rating: true },
+        _count: { _all: true },
+      }),
+    ]);
+
+    const reviewCount = property.ratingBaselineCount + aggregate._count._all;
+    const ratingTotal =
+      Number(property.ratingBaselineTotal) + (aggregate._sum.rating ?? 0);
 
     await tx.property.update({
       where: { id: propertyId },
       data: {
-        averageRating: aggregate._avg.rating ?? 0,
-        reviewCount: aggregate._count._all,
+        averageRating: reviewCount === 0 ? 0 : ratingTotal / reviewCount,
+        reviewCount,
       },
     });
   }
