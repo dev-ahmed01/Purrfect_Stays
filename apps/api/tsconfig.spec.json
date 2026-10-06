@@ -4,8 +4,15 @@
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "target": "ES2022",
-    "types": ["node", "jest"],
-    "noEmit": true
+    "types": [
+      "node",
+      "jest"
+    ],
+    "noEmit": true,
+    "isolatedModules": true
   },
-  "include": ["src/**/*.ts", "test/**/*.ts"]
+  "include": [
+    "src/**/*.ts",
+    "test/**/*.ts"
+  ]
 }
