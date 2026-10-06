@@ -13,6 +13,7 @@ const envSchema = z.object({
   JWT_AUDIENCE: z.string().min(1).default('purrfect-web'),
   REFRESH_TOKEN_TTL: z.string().regex(/^\d+[smhd]$/).default('30d'),
   REFRESH_COOKIE_NAME: z.string().min(1).default('purrfect_refresh'),
+  BOOKING_TAX_RATE_BPS: z.coerce.number().int().min(0).max(10_000).default(1200),
 });
 
 export type AppEnv = z.infer<typeof envSchema>;
