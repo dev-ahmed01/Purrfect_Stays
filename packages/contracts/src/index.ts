@@ -70,3 +70,44 @@ export type QuoteRequest = z.infer<typeof quoteRequestSchema>;
 export type CreateBookingInput = z.infer<typeof createBookingSchema>;
 export type CreatePetInput = z.infer<typeof createPetSchema>;
 export type CreateReviewInput = z.infer<typeof createReviewSchema>;
+
+
+const passwordSchema = z
+  .string()
+  .min(12, 'Password must be at least 12 characters')
+  .max(128, 'Password must be at most 128 characters')
+  .regex(/[a-z]/, 'Password must contain a lowercase letter')
+  .regex(/[A-Z]/, 'Password must contain an uppercase letter')
+  .regex(/[0-9]/, 'Password must contain a number')
+  .regex(/[^A-Za-z0-9]/, 'Password must contain a symbol');
+
+export const registerSchema = z.object({
+  email: z.string().trim().email().max(254).transform((value) => value.toLowerCase()),
+  password: passwordSchema,
+  fullName: z.string().trim().min(2).max(120),
+  phone: z.string().trim().min(8).max(20).optional(),
+  city: z.string().trim().min(2).max(100).optional(),
+});
+
+export const loginSchema = z.object({
+  email: z.string().trim().email().max(254).transform((value) => value.toLowerCase()),
+  password: z.string().min(1).max(128),
+});
+
+export type RegisterInput = z.infer<typeof registerSchema>;
+export type LoginInput = z.infer<typeof loginSchema>;
+
+export type AuthUser = {
+  id: string;
+  email: string;
+  fullName: string;
+  role: UserRole;
+  city: string | null;
+};
+
+export type AccessTokenClaims = {
+  sub: string;
+  sid: string;
+  role: UserRole;
+  email: string;
+};
