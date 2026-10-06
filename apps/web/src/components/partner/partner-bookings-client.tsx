@@ -15,11 +15,13 @@ import { EmptyState } from '../ui/empty-state';
 import { FieldFrame, SelectInput, TextInput } from '../ui/form-field';
 import { PageHeader } from '../ui/page-header';
 import { StatusBadge } from '../ui/status-badge';
+import { WorkspacePagination } from '../ui/workspace-pagination';
 
 export function PartnerBookingsClient() {
   const { request } = useAuth();
   const [items, setItems] = useState<PartnerBookingView[]>([]);
   const [meta, setMeta] = useState<PaginationMeta | null>(null);
+  const [page, setPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState('');
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
@@ -31,7 +33,7 @@ export function PartnerBookingsClient() {
     setLoading(true);
     setError(null);
 
-    const params = new URLSearchParams({ page: '1', pageSize: '50' });
+    const params = new URLSearchParams({ page: String(page), pageSize: '12' });
     if (statusFilter) params.set('status', statusFilter);
     if (from) params.set('from', from);
     if (to) params.set('to', to);
@@ -47,7 +49,7 @@ export function PartnerBookingsClient() {
     } finally {
       setLoading(false);
     }
-  }, [from, request, statusFilter, to]);
+  }, [from, page, request, statusFilter, to]);
 
   useEffect(() => {
     void load();
@@ -83,7 +85,7 @@ export function PartnerBookingsClient() {
       <Card className="workspace-filter-card">
         <CardBody className="workspace-filter-row">
           <FieldFrame label="Status">
-            <SelectInput value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
+            <SelectInput value={statusFilter} onChange={(event) => { setStatusFilter(event.target.value); setPage(1); }}>
               <option value="">All statuses</option>
               <option value="CONFIRMED">Confirmed</option>
               <option value="CHECKED_IN">Checked in</option>
@@ -92,12 +94,12 @@ export function PartnerBookingsClient() {
             </SelectInput>
           </FieldFrame>
           <FieldFrame label="From">
-            <TextInput type="date" value={from} onChange={(event) => setFrom(event.target.value)} />
+            <TextInput type="date" value={from} onChange={(event) => { setFrom(event.target.value); setPage(1); }} />
           </FieldFrame>
           <FieldFrame label="To">
-            <TextInput type="date" value={to} onChange={(event) => setTo(event.target.value)} />
+            <TextInput type="date" value={to} onChange={(event) => { setTo(event.target.value); setPage(1); }} />
           </FieldFrame>
-          <Button variant="outline" onClick={() => { setStatusFilter(''); setFrom(''); setTo(''); }}>
+          <Button variant="outline" onClick={() => { setStatusFilter(''); setFrom(''); setTo(''); setPage(1); }}>
             Clear
           </Button>
         </CardBody>
@@ -161,6 +163,7 @@ export function PartnerBookingsClient() {
           ))}
         </div>
       )}
+      {meta ? <WorkspacePagination meta={meta} onPage={setPage} /> : null}
     </>
   );
 }
