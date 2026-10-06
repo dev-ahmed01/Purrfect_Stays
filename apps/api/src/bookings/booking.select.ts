@@ -49,6 +49,13 @@ export const bookingViewSelect = {
       name: true,
     },
   },
+  review: {
+    select: {
+      id: true,
+      status: true,
+      deletedAt: true,
+    },
+  },
   pets: {
     orderBy: { name: 'asc' },
     select: {
