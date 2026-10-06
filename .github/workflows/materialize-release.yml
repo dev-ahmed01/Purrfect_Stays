@@ -57,7 +57,7 @@ jobs:
           mkdir -p packages/database/prisma/migrations/00000000000000_init
           pnpm --filter @purrfect/database exec prisma migrate diff \
             --from-empty \
-            --to-schema prisma/schema.prisma \
+            --to-schema-datamodel prisma/schema.prisma \
             --script \
             --output prisma/migrations/00000000000000_init/migration.sql
           printf 'provider = "postgresql"\n' > packages/database/prisma/migrations/migration_lock.toml
@@ -73,7 +73,7 @@ jobs:
           set +e
           pnpm --filter @purrfect/database exec prisma migrate diff \
             --from-url "$DATABASE_URL" \
-            --to-schema prisma/schema.prisma \
+            --to-schema-datamodel prisma/schema.prisma \
             --exit-code > migration-drift.txt
           code=$?
           cat migration-drift.txt
