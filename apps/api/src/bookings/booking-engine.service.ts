@@ -129,6 +129,7 @@ export class BookingEngineService {
       where: {
         userId,
         id: { in: input.petIds },
+        archivedAt: null,
       },
       select: {
         id: true,
