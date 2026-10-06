@@ -22,7 +22,7 @@ function workspaceFor(user: AuthUser) {
   return '/account';
 }
 
-function issuesToFields(issues: Array<{ path: PropertyKey[]; message: string }>) {
+function issuesToFields(issues: ReadonlyArray<{ path: PropertyKey[]; message: string }>) {
   const errors: FieldErrors = {};
   for (const issue of issues) {
     const key = String(issue.path[0] ?? 'form');
