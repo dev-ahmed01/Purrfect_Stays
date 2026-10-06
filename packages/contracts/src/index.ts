@@ -6,6 +6,15 @@ export type UserRole = z.infer<typeof userRoleSchema>;
 export const petSpeciesSchema = z.enum(['DOG', 'CAT', 'OTHER']);
 export const petSizeSchema = z.enum(['SMALL', 'MEDIUM', 'LARGE', 'EXTRA_LARGE']);
 
+export const dateOnlySchema = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must use YYYY-MM-DD')
+  .refine((value) => {
+    const parsed = new Date(`${value}T00:00:00.000Z`);
+    return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value;
+  }, 'Date is not a valid calendar date')
+  .transform((value) => new Date(`${value}T00:00:00.000Z`));
+
 export const paginationSchema = z.object({
   page: z.coerce.number().int().positive().default(1),
   pageSize: z.coerce.number().int().min(1).max(50).default(12),
@@ -37,8 +46,8 @@ const amenitiesQuerySchema = z
 export const propertySearchSchema = paginationSchema
   .extend({
     destination: z.string().trim().min(1).max(100).optional(),
-    checkIn: z.coerce.date().optional(),
-    checkOut: z.coerce.date().optional(),
+    checkIn: dateOnlySchema.optional(),
+    checkOut: dateOnlySchema.optional(),
     guests: z.coerce.number().int().min(1).max(20).optional(),
     pets: z.coerce.number().int().min(0).max(10).optional(),
     species: petSpeciesSchema.optional(),
