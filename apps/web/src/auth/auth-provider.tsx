@@ -11,7 +11,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { BROWSER_BROWSER_API_BASE_URL } from '../lib/api-config';
+import { BROWSER_API_BASE_URL } from '../lib/api-config';
 import { ApiError, type ApiFailure, type ApiSuccess } from '../lib/api-types';
 
 type AuthPayload = {
