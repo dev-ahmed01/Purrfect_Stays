@@ -86,6 +86,55 @@ export class PropertiesService {
     return { items };
   }
 
+  async facets() {
+    const publicWhere = this.publicWhere();
+
+    const [amenities, typeRows, priceRange] = await Promise.all([
+      this.prisma.amenity.findMany({
+        where: {
+          properties: {
+            some: {
+              verifiedAt: { not: null },
+              property: publicWhere,
+            },
+          },
+        },
+        orderBy: [{ category: 'asc' }, { name: 'asc' }],
+        select: {
+          slug: true,
+          name: true,
+          category: true,
+          icon: true,
+        },
+      }),
+      this.prisma.property.groupBy({
+        by: ['type'],
+        where: publicWhere,
+        _count: { _all: true },
+      }),
+      this.prisma.property.aggregate({
+        where: publicWhere,
+        _min: { startingPricePaise: true },
+        _max: { startingPricePaise: true },
+      }),
+    ]);
+
+    return {
+      amenities,
+      propertyTypes: typeRows
+        .map((row) => ({
+          type: row.type,
+          stays: row._count._all,
+        }))
+        .sort((a, b) => b.stays - a.stays || a.type.localeCompare(b.type)),
+      priceRange: {
+        currency: 'INR',
+        minAmountPaise: priceRange._min.startingPricePaise ?? 0,
+        maxAmountPaise: priceRange._max.startingPricePaise ?? 0,
+      },
+    };
+  }
+
   async findBySlug(slug: string) {
     const property = await this.prisma.property.findFirst({
       where: {
