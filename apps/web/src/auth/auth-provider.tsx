@@ -131,16 +131,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const { retryAuth = true, headers, ...init } = options;
       const makeRequest = async () => {
         const token = accessTokenRef.current;
+        const requestHeaders = new Headers(headers);
+        if (!requestHeaders.has('Accept')) requestHeaders.set('Accept', 'application/json');
+        if (init.body && !requestHeaders.has('Content-Type')) {
+          requestHeaders.set('Content-Type', 'application/json');
+        }
+        if (token) requestHeaders.set('Authorization', `Bearer ${token}`);
 
         return fetch(`${API_BASE_URL}${path.startsWith('/') ? path : `/${path}`}`, {
           ...init,
           credentials: 'include',
-          headers: {
-            Accept: 'application/json',
-            ...(init.body ? { 'Content-Type': 'application/json' } : {}),
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-            ...headers,
-          },
+          headers: requestHeaders,
         });
       };
 
