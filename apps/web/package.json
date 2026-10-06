@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "tsc --noEmit",
     "typecheck": "tsc --noEmit",
-    "test": "echo \"frontend tests are added in Phase 13\""
+    "test": "tsc --noEmit"
   },
   "dependencies": {
     "@purrfect/contracts": "workspace:*",
