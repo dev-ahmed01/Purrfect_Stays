@@ -16,7 +16,9 @@
     "db:migrate": "pnpm --filter @purrfect/database db:migrate",
     "db:seed": "pnpm --filter @purrfect/database db:seed",
     "format": "prettier --write .",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "db:deploy": "pnpm --filter @purrfect/database db:deploy",
+    "db:status": "pnpm --filter @purrfect/database db:status"
   },
   "devDependencies": {
     "prettier": "^3.6.2",
