@@ -6,6 +6,8 @@ import {
   Home,
   LogOut,
   PawPrint,
+  ShieldCheck,
+  Star,
   type LucideIcon,
 } from 'lucide-react';
 import Link from 'next/link';
@@ -115,4 +117,10 @@ export const partnerNavItems: AppShellNavItem[] = [
   { href: '/partner', label: 'Overview', icon: Home },
   { href: '/partner/bookings', label: 'Bookings', icon: CalendarDays },
   { href: '/partner/properties', label: 'Properties', icon: PawPrint },
+];
+
+export const adminNavItems: AppShellNavItem[] = [
+  { href: '/admin', label: 'Overview', icon: Home },
+  { href: '/admin/listings', label: 'Listings', icon: ShieldCheck },
+  { href: '/admin/reviews', label: 'Reviews', icon: Star },
 ];
