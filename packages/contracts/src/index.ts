@@ -276,6 +276,211 @@ export type PublicReviewsQuery = z.infer<typeof publicReviewsQuerySchema>;
 export type ModerateReviewInput = z.infer<typeof moderateReviewSchema>;
 
 
+
+export const propertyStatusSchema = z.enum([
+  'DRAFT',
+  'PENDING_REVIEW',
+  'PUBLISHED',
+  'SUSPENDED',
+]);
+
+export const verificationStatusSchema = z.enum([
+  'UNVERIFIED',
+  'PENDING',
+  'VERIFIED',
+  'REJECTED',
+]);
+
+export const petFeeModeSchema = z.enum(['PER_STAY', 'PER_NIGHT']);
+
+const nullableTrimmedString = (max: number) =>
+  z.union([z.string().trim().max(max), z.null()]);
+
+export const createPartnerPropertySchema = z.object({
+  name: z.string().trim().min(2).max(140),
+  type: propertyTypeSchema,
+  shortDescription: z.string().trim().min(20).max(280),
+  description: z.string().trim().min(80).max(5000),
+  addressLine1: z.string().trim().min(3).max(200),
+  addressLine2: nullableTrimmedString(200).optional(),
+  locality: nullableTrimmedString(120).optional(),
+  city: z.string().trim().min(2).max(120),
+  state: z.string().trim().min(2).max(120),
+  country: z.string().trim().min(2).max(120).default('India'),
+  postalCode: nullableTrimmedString(20).optional(),
+  latitude: z.union([z.coerce.number().min(-90).max(90), z.null()]).optional(),
+  longitude: z.union([z.coerce.number().min(-180).max(180), z.null()]).optional(),
+});
+
+export const updatePartnerPropertySchema = createPartnerPropertySchema
+  .partial()
+  .refine((value) => Object.values(value).some((item) => item !== undefined), {
+    message: 'At least one property field must be provided',
+  });
+
+const normalizedBreedKeysSchema = z
+  .array(z.string().trim().min(1).max(120).transform((value) => value.toLowerCase().replace(/\s+/g, ' ')))
+  .max(100)
+  .transform((values) => Array.from(new Set(values)));
+
+export const upsertPetPolicySchema = z.object({
+  maxPets: z.coerce.number().int().min(1).max(10),
+  petFeePaise: z.coerce.number().int().min(0).max(10_000_000),
+  petFeeMode: petFeeModeSchema,
+  allowsDogs: z.boolean(),
+  allowsCats: z.boolean(),
+  allowsOther: z.boolean(),
+  allowedSizes: z
+    .array(petSizeSchema)
+    .min(1)
+    .max(4)
+    .transform((values) => Array.from(new Set(values))),
+  allowedBreedKeys: normalizedBreedKeysSchema.default([]),
+  restrictedBreedKeys: normalizedBreedKeysSchema.default([]),
+  requiresVaccination: z.boolean(),
+  notes: nullableTrimmedString(2000).optional(),
+}).superRefine((value, context) => {
+  const overlap = value.allowedBreedKeys.filter((breed) =>
+    value.restrictedBreedKeys.includes(breed),
+  );
+
+  if (overlap.length > 0) {
+    context.addIssue({
+      code: 'custom',
+      path: ['restrictedBreedKeys'],
+      message: 'A breed cannot be both allowed and restricted',
+    });
+  }
+
+  if (!value.allowsDogs && !value.allowsCats && !value.allowsOther) {
+    context.addIssue({
+      code: 'custom',
+      path: ['allowsDogs'],
+      message: 'At least one pet species must be allowed',
+    });
+  }
+});
+
+const httpsUrlSchema = z
+  .string()
+  .url()
+  .refine((value) => value.startsWith('https://'), 'Image URL must use HTTPS');
+
+export const replacePropertyImagesSchema = z.object({
+  images: z
+    .array(
+      z.object({
+        url: httpsUrlSchema,
+        altText: z.string().trim().min(3).max(240),
+      }),
+    )
+    .max(12),
+});
+
+export const replacePropertyAmenitiesSchema = z.object({
+  amenitySlugs: z
+    .array(z.string().trim().min(1).max(80).transform((value) => value.toLowerCase()))
+    .max(30)
+    .transform((values) => Array.from(new Set(values))),
+});
+
+export const createRoomTypeSchema = z.object({
+  name: z.string().trim().min(2).max(120),
+  description: nullableTrimmedString(1000).optional(),
+  capacity: z.coerce.number().int().min(1).max(20),
+  totalUnits: z.coerce.number().int().min(1).max(100),
+  nightlyRatePaise: z.coerce.number().int().min(0).max(100_000_000),
+  serviceFeePaise: z.coerce.number().int().min(0).max(20_000_000).default(0),
+});
+
+export const updateRoomTypeSchema = z
+  .object({
+    name: z.string().trim().min(2).max(120).optional(),
+    description: nullableTrimmedString(1000).optional(),
+    capacity: z.coerce.number().int().min(1).max(20).optional(),
+    totalUnits: z.coerce.number().int().min(1).max(100).optional(),
+    nightlyRatePaise: z.coerce.number().int().min(0).max(100_000_000).optional(),
+    serviceFeePaise: z.coerce.number().int().min(0).max(20_000_000).optional(),
+    active: z.boolean().optional(),
+  })
+  .refine((value) => Object.values(value).some((item) => item !== undefined), {
+    message: 'At least one room-type field must be provided',
+  });
+
+const inventoryUpdateSchema = z.object({
+  date: dateOnlySchema,
+  totalUnits: z.coerce.number().int().min(1).max(100).optional(),
+  nightlyRatePaise: z
+    .union([z.coerce.number().int().min(0).max(100_000_000), z.null()])
+    .optional(),
+  closed: z.boolean().optional(),
+});
+
+export const updateInventoryCalendarSchema = z
+  .object({
+    updates: z.array(inventoryUpdateSchema).min(1).max(366),
+  })
+  .superRefine((value, context) => {
+    const dates = value.updates.map((item) => item.date.toISOString().slice(0, 10));
+    if (new Set(dates).size !== dates.length) {
+      context.addIssue({
+        code: 'custom',
+        path: ['updates'],
+        message: 'Inventory dates must be unique within one request',
+      });
+    }
+  });
+
+export const partnerPropertiesQuerySchema = paginationSchema.extend({
+  status: propertyStatusSchema.optional(),
+});
+
+export const partnerBookingsQuerySchema = paginationSchema.extend({
+  status: bookingStatusSchema.optional(),
+  propertyId: z.string().uuid().optional(),
+  from: dateOnlySchema.optional(),
+  to: dateOnlySchema.optional(),
+}).superRefine((value, context) => {
+  if (value.from && value.to && value.to < value.from) {
+    context.addIssue({
+      code: 'custom',
+      path: ['to'],
+      message: 'to must be on or after from',
+    });
+  }
+});
+
+export const partnerBookingTransitionSchema = z.object({
+  toStatus: z.enum(['CHECKED_IN', 'COMPLETED']),
+  reason: z.string().trim().min(3).max(500).optional(),
+});
+
+export const adminListingQueueQuerySchema = paginationSchema.extend({
+  status: z.enum(['PENDING_REVIEW', 'PUBLISHED', 'SUSPENDED']).optional(),
+  verificationStatus: verificationStatusSchema.optional(),
+});
+
+export const adminListingDecisionSchema = z.object({
+  decision: z.enum(['APPROVE', 'REJECT']),
+  note: z.string().trim().min(3).max(1000),
+});
+
+export type PropertyStatus = z.infer<typeof propertyStatusSchema>;
+export type VerificationStatus = z.infer<typeof verificationStatusSchema>;
+export type CreatePartnerPropertyInput = z.infer<typeof createPartnerPropertySchema>;
+export type UpdatePartnerPropertyInput = z.infer<typeof updatePartnerPropertySchema>;
+export type UpsertPetPolicyInput = z.infer<typeof upsertPetPolicySchema>;
+export type ReplacePropertyImagesInput = z.infer<typeof replacePropertyImagesSchema>;
+export type ReplacePropertyAmenitiesInput = z.infer<typeof replacePropertyAmenitiesSchema>;
+export type CreateRoomTypeInput = z.infer<typeof createRoomTypeSchema>;
+export type UpdateRoomTypeInput = z.infer<typeof updateRoomTypeSchema>;
+export type UpdateInventoryCalendarInput = z.infer<typeof updateInventoryCalendarSchema>;
+export type PartnerPropertiesQuery = z.infer<typeof partnerPropertiesQuerySchema>;
+export type PartnerBookingsQuery = z.infer<typeof partnerBookingsQuerySchema>;
+export type PartnerBookingTransitionInput = z.infer<typeof partnerBookingTransitionSchema>;
+export type AdminListingQueueQuery = z.infer<typeof adminListingQueueQuerySchema>;
+export type AdminListingDecisionInput = z.infer<typeof adminListingDecisionSchema>;
+
 const passwordSchema = z
   .string()
   .min(12, 'Password must be at least 12 characters')
