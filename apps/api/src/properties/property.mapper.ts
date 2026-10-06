@@ -23,6 +23,8 @@ type PetPolicyShape = {
   allowsCats: boolean;
   allowsOther: boolean;
   allowedSizes: string[];
+  allowedBreedKeys: string[];
+  restrictedBreedKeys: string[];
   requiresVaccination: boolean;
   notes: string | null;
 } | null;
@@ -82,6 +84,8 @@ export function mapPropertySummary(property: {
           allowsCats: property.petPolicy.allowsCats,
           allowsOther: property.petPolicy.allowsOther,
           allowedSizes: property.petPolicy.allowedSizes,
+          allowedBreedKeys: property.petPolicy.allowedBreedKeys,
+          restrictedBreedKeys: property.petPolicy.restrictedBreedKeys,
           requiresVaccination: property.petPolicy.requiresVaccination,
         }
       : null,
@@ -142,6 +146,8 @@ export function mapPropertyDetail(property: Parameters<typeof mapPropertySummary
           allowsCats: property.petPolicy.allowsCats,
           allowsOther: property.petPolicy.allowsOther,
           allowedSizes: property.petPolicy.allowedSizes,
+          allowedBreedKeys: property.petPolicy.allowedBreedKeys,
+          restrictedBreedKeys: property.petPolicy.restrictedBreedKeys,
           requiresVaccination: property.petPolicy.requiresVaccination,
           notes: property.petPolicy.notes,
         }
