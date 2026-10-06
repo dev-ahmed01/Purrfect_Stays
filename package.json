@@ -15,11 +15,13 @@
     "db:generate": "pnpm --filter @purrfect/database db:generate",
     "db:migrate": "pnpm --filter @purrfect/database db:migrate",
     "db:seed": "pnpm --filter @purrfect/database db:seed",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "test:e2e": "playwright test"
   },
   "devDependencies": {
     "prettier": "^3.6.2",
     "turbo": "^2.5.6",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.2",
+    "@playwright/test": "^1.63.0"
   }
 }
