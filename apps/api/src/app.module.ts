@@ -9,6 +9,8 @@ import { AllExceptionsFilter } from './common/http/all-exceptions.filter.js';
 import { RequestIdMiddleware } from './common/http/request-id.middleware.js';
 import { ResponseEnvelopeInterceptor } from './common/http/response-envelope.interceptor.js';
 import { RequestLoggingInterceptor } from './common/logging/request-logging.interceptor.js';
+import { MetricsMiddleware } from './common/observability/metrics.middleware.js';
+import { ObservabilityModule } from './common/observability/observability.module.js';
 import { validateEnv } from './config/env.js';
 import { DatabaseModule } from './database/database.module.js';
 import { FavouritesModule } from './favourites/favourites.module.js';
@@ -28,6 +30,7 @@ import type { AppEnv } from './config/env.js';
       validate: validateEnv,
     }),
     RequestContextModule,
+    ObservabilityModule,
     DatabaseModule,
     RedisModule,
     ThrottlerModule.forRootAsync({
@@ -77,6 +80,6 @@ import type { AppEnv } from './config/env.js';
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(RequestIdMiddleware).forRoutes('*');
+    consumer.apply(RequestIdMiddleware, MetricsMiddleware).forRoutes('*');
   }
 }
