@@ -236,6 +236,11 @@ export type BookingView = {
     id: string;
     name: string;
   };
+  review: null | {
+    id: string;
+    status: string;
+    deletedAt: string | null;
+  };
   pets: Array<{
     petId: string | null;
     name: string;
