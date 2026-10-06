@@ -265,7 +265,7 @@ export function ReviewsClient({ initialBookingId }: { initialBookingId?: string 
                     <p>{review.property ? review.property.city + ', ' + review.property.state : ''}</p>
                   </div>
                   <StatusBadge tone={statusTone(review.status)}>
-                    {humanizeStatus(review.status)}
+                    {review.deletedAt ? 'Withdrawn' : humanizeStatus(review.status)}
                   </StatusBadge>
                 </div>
 
@@ -281,14 +281,20 @@ export function ReviewsClient({ initialBookingId }: { initialBookingId?: string 
                   </Alert>
                 ) : null}
 
-                <div className="workspace-inline-actions">
-                  <Button size="sm" variant="outline" onClick={() => setEditor({ kind: 'edit', review })}>
-                    <Pencil size={15} aria-hidden="true" /> Edit
-                  </Button>
-                  <Button disabled={busy} size="sm" variant="ghost" onClick={() => withdraw(review)}>
-                    <Trash2 size={15} aria-hidden="true" /> Withdraw
-                  </Button>
-                </div>
+                {review.deletedAt ? (
+                  <p className="detail-muted">
+                    This review was withdrawn and remains linked to its completed stay history.
+                  </p>
+                ) : (
+                  <div className="workspace-inline-actions">
+                    <Button size="sm" variant="outline" onClick={() => setEditor({ kind: 'edit', review })}>
+                      <Pencil size={15} aria-hidden="true" /> Edit
+                    </Button>
+                    <Button disabled={busy} size="sm" variant="ghost" onClick={() => withdraw(review)}>
+                      <Trash2 size={15} aria-hidden="true" /> Withdraw
+                    </Button>
+                  </div>
+                )}
               </CardBody>
             </Card>
           ))}
