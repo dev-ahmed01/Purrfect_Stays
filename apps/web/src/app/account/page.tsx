@@ -12,7 +12,7 @@ export default function AccountOverviewPage() {
         description="Your trips, pets and saved stays will live here."
       />
       <div className="summary-grid">
-        <Card><CardBody className="summary-card"><PlaneTakeoff /><span>Trips</span><strong>Ready for Phase 12</strong></CardBody></Card>
+        <Card><CardBody className="summary-card"><PlaneTakeoff /><span>Trips</span><strong>Your reservations</strong></CardBody></Card>
         <Card><CardBody className="summary-card"><PawPrint /><span>Pets</span><strong>Connected to your profile</strong></CardBody></Card>
         <Card><CardBody className="summary-card"><Heart /><span>Saved stays</span><strong>Synced favourites</strong></CardBody></Card>
       </div>
@@ -21,7 +21,7 @@ export default function AccountOverviewPage() {
           <div className="workspace-placeholder">
             <StatusBadge tone="success">Shell ready</StatusBadge>
             <h2>Your account workspace is connected.</h2>
-            <p>Trip, pet and favourites data screens are built in Phase 12 on this shared shell.</p>
+            <p>Use this workspace for your upcoming trips, pet profiles and saved stays.</p>
           </div>
         </CardBody>
       </Card>
