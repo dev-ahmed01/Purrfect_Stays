@@ -7,6 +7,7 @@ import { BookingPanel } from '../../../components/booking-panel';
 import { PropertyGallery } from '../../../components/property-gallery';
 import { PropertyReviews } from '../../../components/property-reviews';
 import { RatingBadge } from '../../../components/rating-badge';
+import { SaveStayButton } from '../../../components/save-stay-button';
 import { SiteFooter } from '../../../components/site-footer';
 import { SiteHeader } from '../../../components/site-header';
 import type {
@@ -114,10 +115,13 @@ export default async function PropertyDetailPage({
               ].filter(Boolean).join(', ')}
             </p>
           </div>
-          <RatingBadge
-            count={property.reviewCount}
-            rating={property.rating}
-          />
+          <div className="detail-header-actions">
+            <RatingBadge
+              count={property.reviewCount}
+              rating={property.rating}
+            />
+            <SaveStayButton propertyId={property.id} returnTo={returnTo} />
+          </div>
         </header>
 
         <PropertyGallery
