@@ -13,39 +13,9 @@ module.exports = {
     ],
   },
   moduleNameMapper: {
-    '^@purrfect/contracts
-  collectCoverageFrom: [
-    'src/**/*.ts',
-    '!src/main.ts',
-    '!src/**/*.module.ts',
-    '!src/**/*.controller.ts',
-    '!src/**/*.decorator.ts',
-  ],
-  coverageDirectory: 'coverage',
-};
-: '<rootDir>/../../packages/contracts/src/index.ts',
-    '^@purrfect/database
-  collectCoverageFrom: [
-    'src/**/*.ts',
-    '!src/main.ts',
-    '!src/**/*.module.ts',
-    '!src/**/*.controller.ts',
-    '!src/**/*.decorator.ts',
-  ],
-  coverageDirectory: 'coverage',
-};
-: '<rootDir>/../../packages/database/src/index.ts',
-    '^(\\.{1,2}/.*)\\.js
-  collectCoverageFrom: [
-    'src/**/*.ts',
-    '!src/main.ts',
-    '!src/**/*.module.ts',
-    '!src/**/*.controller.ts',
-    '!src/**/*.decorator.ts',
-  ],
-  coverageDirectory: 'coverage',
-};
-: '$1',
+    '^@purrfect/contracts$': '<rootDir>/../../packages/contracts/src/index.ts',
+    '^@purrfect/database$': '<rootDir>/../../packages/database/src/index.ts',
+    '^(\\.{1,2}/.*)\\.js$': '$1',
   },
   collectCoverageFrom: [
     'src/**/*.ts',
