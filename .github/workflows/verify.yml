@@ -1,0 +1,151 @@
+name: Verify
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: purrfect
+          POSTGRES_PASSWORD: purrfect
+          POSTGRES_DB: purrfect_stays
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U purrfect -d purrfect_stays"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+      redis:
+        image: redis:7.4-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://purrfect:purrfect@127.0.0.1:5432/purrfect_stays?schema=public
+      REDIS_URL: redis://127.0.0.1:6379
+      API_PORT: 4000
+      API_PREFIX: api/v1
+      WEB_ORIGIN: http://127.0.0.1:3000
+      WEB_BASE_URL: http://127.0.0.1:3000
+      API_BASE_URL: http://127.0.0.1:4000/api/v1
+      NEXT_PUBLIC_API_URL: http://127.0.0.1:4000/api/v1
+      JWT_ACCESS_SECRET: ci-access-secret-that-is-longer-than-thirty-two-characters
+      JWT_ACCESS_TTL: 15m
+      JWT_ISSUER: purrfect-api
+      JWT_AUDIENCE: purrfect-web
+      REFRESH_TOKEN_TTL: 30d
+      REFRESH_COOKIE_NAME: purrfect_refresh
+      BOOKING_TAX_RATE_BPS: 1200
+      RATE_LIMIT_TTL_MS: 60000
+      RATE_LIMIT_LIMIT: 500
+      TRUST_PROXY_HOPS: 0
+      JSON_BODY_LIMIT: 128kb
+      SEED_DEMO_PASSWORD: CI-Purrfect-Demo-2026!
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.19.0'
+
+      - name: Enable pnpm
+        run: corepack enable
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Generate Prisma client
+        run: pnpm db:generate
+
+      - name: Create ephemeral database schema
+        run: pnpm --filter @purrfect/database db:push
+
+      - name: Seed test database
+        env:
+          NODE_ENV: test
+        run: pnpm db:seed
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: API unit tests
+        run: pnpm --filter @purrfect/api test
+
+      - name: Production build
+        env:
+          NODE_ENV: production
+        run: pnpm build
+
+      - name: Install Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Full-stack end-to-end verification
+        env:
+          NODE_ENV: production
+        run: |
+          pnpm --filter @purrfect/api start > api.log 2>&1 &
+          API_PID=$!
+          pnpm --filter @purrfect/web start > web.log 2>&1 &
+          WEB_PID=$!
+
+          cleanup() {
+            kill "$API_PID" "$WEB_PID" 2>/dev/null || true
+          }
+          trap cleanup EXIT
+
+          for i in {1..40}; do
+            if curl --fail --silent http://127.0.0.1:4000/api/v1/health/ready > /dev/null; then
+              break
+            fi
+            if [ "$i" -eq 40 ]; then
+              cat api.log
+              exit 1
+            fi
+            sleep 1
+          done
+
+          for i in {1..40}; do
+            if curl --fail --silent http://127.0.0.1:3000/ > /dev/null; then
+              break
+            fi
+            if [ "$i" -eq 40 ]; then
+              cat web.log
+              exit 1
+            fi
+            sleep 1
+          done
+
+          pnpm test:e2e
+
+      - name: Upload verification logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: verification-logs
+          path: |
+            api.log
+            web.log
+            playwright-report
+            test-results
+          if-no-files-found: ignore
