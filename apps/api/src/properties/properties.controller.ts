@@ -47,6 +47,11 @@ export class PropertiesController {
     return this.properties.destinations(query);
   }
 
+  @Get('facets')
+  facets() {
+    return this.properties.facets();
+  }
+
   @Get(':slug')
   detail(
     @Param(new ZodValidationPipe(propertySlugParamsSchema))
