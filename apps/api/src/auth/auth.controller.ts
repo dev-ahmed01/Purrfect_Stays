@@ -11,12 +11,14 @@ import {
   Req,
   Res,
   UnauthorizedException,
+  UseGuards,
 } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { loginSchema, registerSchema, type LoginInput, type RegisterInput } from '@purrfect/contracts';
 import type { Request, Response } from 'express';
 import { ZodValidationPipe } from '../common/validation/zod-validation.pipe.js';
 import { AuthCookieService } from './auth-cookie.service.js';
+import { BrowserOriginGuard } from './browser-origin.guard.js';
 import { AuthService } from './auth.service.js';
 import { CurrentUser } from './current-user.decorator.js';
 import type { AuthenticatedPrincipal, ClientMetadata } from './auth.types.js';
@@ -69,6 +71,7 @@ export class AuthController {
   }
 
   @Public()
+  @UseGuards(BrowserOriginGuard)
   @Throttle({ default: { limit: 20, ttl: 60_000 } })
   @HttpCode(HttpStatus.OK)
   @Post('refresh')
@@ -92,6 +95,7 @@ export class AuthController {
   }
 
   @Public()
+  @UseGuards(BrowserOriginGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   @Post('logout')
   async logout(
