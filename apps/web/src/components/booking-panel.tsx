@@ -30,24 +30,18 @@ type BookingPayload = {
   petIds: string[];
 };
 
-function browserToday(): string {
-  return new Intl.DateTimeFormat('en-CA', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).format(new Date());
-}
-
 export function BookingPanel({
   property,
   initialCheckIn,
   initialCheckOut,
   initialGuests,
+  minDate,
 }: {
   property: PropertyDetail;
   initialCheckIn?: string;
   initialCheckOut?: string;
   initialGuests?: string;
+  minDate: string;
 }) {
   const { status, user, request } = useAuth();
   const [pets, setPets] = useState<PetProfile[]>([]);
@@ -306,7 +300,7 @@ export function BookingPanel({
       <div className="booking-field-grid">
         <FieldFrame label="Check-in">
           <TextInput
-            min={browserToday()}
+            min={minDate}
             onChange={(event) => {
               setCheckIn(event.target.value);
               invalidateReservationState();
@@ -317,7 +311,7 @@ export function BookingPanel({
         </FieldFrame>
         <FieldFrame label="Check-out">
           <TextInput
-            min={checkIn || browserToday()}
+            min={checkIn || minDate}
             onChange={(event) => {
               setCheckOut(event.target.value);
               invalidateReservationState();
