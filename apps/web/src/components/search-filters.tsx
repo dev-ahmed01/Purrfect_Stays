@@ -174,6 +174,11 @@ export function SearchFilters({
       </fieldset>
 
       <input name="pageSize" type="hidden" value="12" />
+      <input
+        name="sort"
+        type="hidden"
+        value={firstParam(params, 'sort') ?? 'recommended'}
+      />
 
       <button className="button button-primary button-full" type="submit">
         Apply filters
