@@ -1,10 +1,11 @@
+import type { ReactNode } from 'react';
 import { Check } from 'lucide-react';
 
 export function AmenityBadge({
   children,
   verified = false,
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
   verified?: boolean;
 }) {
   return (
