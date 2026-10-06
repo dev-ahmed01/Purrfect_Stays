@@ -26,6 +26,8 @@ async function resetDemoData() {
   }
 
   await prisma.review.deleteMany();
+  await prisma.bookingInventoryReservation.deleteMany();
+  await prisma.bookingStatusEvent.deleteMany();
   await prisma.bookingPet.deleteMany();
   await prisma.booking.deleteMany();
   await prisma.favourite.deleteMany();
@@ -390,6 +392,8 @@ async function main() {
         postalCode: seed.postalCode,
         averageRating: seed.rating,
         reviewCount: seed.reviewCount,
+        ratingBaselineCount: seed.reviewCount,
+        ratingBaselineTotal: Math.round(seed.rating * seed.reviewCount * 100) / 100,
         startingPricePaise: seed.rate,
         featured: seed.featured,
         publishedAt: new Date(),
@@ -523,6 +527,9 @@ async function main() {
         body:
           'The pet policy matched what we found at check-in, the lawn was genuinely spacious and having a vet option nearby made the stay much less stressful.',
         status: ReviewStatus.PUBLISHED,
+        moderatedByUserId: admin.id,
+        moderatedAt: new Date(),
+        moderationNote: 'Approved seeded demo review.',
       },
     }),
     prisma.favourite.create({
@@ -532,6 +539,20 @@ async function main() {
       },
     }),
   ]);
+
+  const pawVillaSeed = propertySeeds.find((seed) => seed.slug === 'the-paw-villa');
+  if (!pawVillaSeed) throw new Error('Seed invariant failed: The Paw Villa seed was not found.');
+
+  const pawVillaReviewCount = pawVillaSeed.reviewCount + 1;
+  const pawVillaRatingTotal = pawVillaSeed.rating * pawVillaSeed.reviewCount + 5;
+
+  await prisma.property.update({
+    where: { id: pawVilla.id },
+    data: {
+      reviewCount: pawVillaReviewCount,
+      averageRating: pawVillaRatingTotal / pawVillaReviewCount,
+    },
+  });
 
   console.log('Purrfect Stays seed complete.');
   console.log('Demo accounts: admin@purrfect.local, partner@purrfect.local, ananya@purrfect.local');
