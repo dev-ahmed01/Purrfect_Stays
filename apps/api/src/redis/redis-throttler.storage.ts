@@ -1,8 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import type {
-  ThrottlerStorage,
-  ThrottlerStorageRecord,
-} from '@nestjs/throttler';
+import type { ThrottlerStorage } from '@nestjs/throttler';
 import { createHash } from 'node:crypto';
 import { RedisService } from './redis.service.js';
 
@@ -42,7 +39,7 @@ export class RedisThrottlerStorage implements ThrottlerStorage {
     limit: number,
     blockDuration: number,
     throttlerName: string,
-  ): Promise<ThrottlerStorageRecord> {
+  ) {
     const effectiveBlockDuration = blockDuration > 0 ? blockDuration : ttl;
     const digest = createHash('sha256')
       .update(throttlerName + ':' + key, 'utf8')
@@ -67,7 +64,12 @@ export class RedisThrottlerStorage implements ThrottlerStorage {
       throw new Error('Redis throttler returned an invalid result.');
     }
 
-    const [totalHits, ttlMs, blocked, blockTtlMs] = result as number[];
+    const [totalHits, ttlMs, blocked, blockTtlMs] = result as [
+      number,
+      number,
+      number,
+      number,
+    ];
 
     return {
       totalHits,
