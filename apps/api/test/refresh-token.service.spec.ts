@@ -1,3 +1,4 @@
+import { jest } from '@jest/globals';
 import { ConfigService } from '@nestjs/config';
 import { RefreshTokenService } from '../src/auth/refresh-token.service.js';
 
