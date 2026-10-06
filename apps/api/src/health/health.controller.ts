@@ -1,9 +1,12 @@
 import { Controller, Get } from '@nestjs/common';
+import { DatabaseHealthService } from '../common/database/database-health.service.js';
 
 @Controller('health')
 export class HealthController {
+  constructor(private readonly databaseHealth: DatabaseHealthService) {}
+
   @Get()
-  health() {
+  liveness() {
     return {
       status: 'ok',
       service: 'purrfect-api',
@@ -12,9 +15,13 @@ export class HealthController {
   }
 
   @Get('ready')
-  readiness() {
+  async readiness() {
+    const dependencies = await this.databaseHealth.check();
+
     return {
       status: 'ready',
+      dependencies,
+      timestamp: new Date().toISOString(),
     };
   }
 }
