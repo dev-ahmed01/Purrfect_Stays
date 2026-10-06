@@ -10,14 +10,16 @@ The verification job performs, in order:
 
 1. dependency installation,
 2. Prisma client generation,
-3. creation of an ephemeral PostgreSQL schema with `prisma db push`,
-4. deterministic demo seed,
-5. monorepo TypeScript checks,
-6. Nest API unit tests,
-7. a production monorepo build,
-8. Chromium installation,
-9. startup of the compiled API and production Next.js server,
-10. Playwright full-stack verification.
+3. `prisma migrate deploy` against empty PostgreSQL,
+4. migration-status and schema-drift verification,
+5. deterministic demo seed,
+6. monorepo TypeScript checks,
+7. Nest API unit tests,
+8. a production monorepo build,
+9. a production API Docker build,
+10. startup of the compiled API and production Next.js server,
+11. release smoke verification,
+12. Chromium/Playwright full-stack and accessibility verification.
 
 A failed browser/runtime job uploads:
 
@@ -26,7 +28,7 @@ A failed browser/runtime job uploads:
 - Playwright HTML report,
 - traces/screenshots/test results.
 
-The CI database uses `db push` only as an isolated verification mechanism. Production migration files are intentionally a Phase 14 release concern.
+CI uses the committed Prisma migration history, not `db push`. The migrated database is diffed back against `schema.prisma`; any schema drift fails the workflow. Dependency installation is also frozen by the committed pnpm lockfile.
 
 ## Production artifact verification
 
@@ -255,15 +257,17 @@ Basic accessibility contracts check:
 
 This is a baseline automated accessibility gate, not a substitute for manual assistive-technology testing.
 
-## What Phase 13 does not claim
+## Release verification added in Phase 14
 
-Phase 13 does not claim:
+Release verification additionally proves:
 
-- production infrastructure has been deployed,
-- real production TLS/domain configuration has been exercised,
-- database migration files have been generated/applied to a production target,
-- payment processing exists,
-- load/stress testing proves a specific throughput SLA,
-- automated accessibility tests cover every WCAG criterion.
+- the committed pnpm lockfile installs with `--frozen-lockfile`,
+- the baseline/future Prisma migration history deploys to empty PostgreSQL,
+- Prisma migration status is clean,
+- the migrated database has zero drift from the Prisma datamodel,
+- the production API Dockerfile builds,
+- the web-origin `/api/v1` rewrite reaches the API,
+- registration and refresh-cookie rotation work through that same-origin browser proxy,
+- the reusable release smoke command verifies direct readiness, proxied readiness and rendered public pages.
 
-Deployment, durable migrations, environment provisioning, release sequencing and final production smoke verification are Phase 14.
+The repository still does not claim that live production infrastructure exists until the Vercel/Railway services are explicitly provisioned and Production Smoke passes against their real URLs. Payment processing, a measured throughput SLA and exhaustive manual accessibility validation also remain outside the current scope.
