@@ -12,6 +12,7 @@ import {
   Res,
   UnauthorizedException,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { loginSchema, registerSchema, type LoginInput, type RegisterInput } from '@purrfect/contracts';
 import type { Request, Response } from 'express';
 import { ZodValidationPipe } from '../common/validation/zod-validation.pipe.js';
@@ -33,6 +34,7 @@ export class AuthController {
   ) {}
 
   @Public()
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @Post('register')
   async register(
     @Body(new ZodValidationPipe(registerSchema)) input: RegisterInput,
@@ -49,6 +51,7 @@ export class AuthController {
   }
 
   @Public()
+  @Throttle({ default: { limit: 8, ttl: 60_000 } })
   @HttpCode(HttpStatus.OK)
   @Post('login')
   async login(
@@ -66,6 +69,7 @@ export class AuthController {
   }
 
   @Public()
+  @Throttle({ default: { limit: 20, ttl: 60_000 } })
   @HttpCode(HttpStatus.OK)
   @Post('refresh')
   async refresh(
