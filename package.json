@@ -7,7 +7,7 @@
     "node": ">=20.19.0"
   },
   "scripts": {
-    "dev": "turbo dev",
+    "dev": "pnpm --filter @purrfect/contracts build && pnpm --filter @purrfect/database build && turbo dev",
     "build": "turbo build",
     "lint": "turbo lint",
     "test": "turbo test",
