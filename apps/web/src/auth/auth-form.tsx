@@ -31,7 +31,7 @@ function issuesToFields(issues: ReadonlyArray<{ path: PropertyKey[]; message: st
   return errors;
 }
 
-export function AuthForm({ mode }: { mode: 'login' | 'signup' }) {
+export function AuthForm({ mode, returnTo }: { mode: 'login' | 'signup'; returnTo?: string }) {
   const router = useRouter();
   const { login, register } = useAuth();
   const [errors, setErrors] = useState<FieldErrors>({});
@@ -80,7 +80,7 @@ export function AuthForm({ mode }: { mode: 'login' | 'signup' }) {
         user = await register(parsed.data);
       }
 
-      router.replace(workspaceFor(user));
+      router.replace(returnTo ?? workspaceFor(user));
       router.refresh();
     } catch (error) {
       setRequestError(
