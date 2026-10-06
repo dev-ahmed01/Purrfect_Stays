@@ -100,6 +100,12 @@ export class AdminListingsService {
         );
       }
 
+      if (existing.verificationStatus !== VerificationStatus.PENDING) {
+        throw new ConflictException(
+          'Listing verification state is inconsistent with the review queue.',
+        );
+      }
+
       const now = new Date();
 
       if (input.decision === 'APPROVE') {
