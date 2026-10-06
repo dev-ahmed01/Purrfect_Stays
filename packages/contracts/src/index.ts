@@ -77,6 +77,18 @@ export const propertySearchSchema = paginationSchema
     }
 
     if (
+      value.checkIn &&
+      value.checkOut &&
+      (value.checkOut.getTime() - value.checkIn.getTime()) / 86_400_000 > 60
+    ) {
+      context.addIssue({
+        code: 'custom',
+        path: ['checkOut'],
+        message: 'Search stays are limited to 60 nights',
+      });
+    }
+
+    if (
       value.minPrice !== undefined &&
       value.maxPrice !== undefined &&
       value.minPrice > value.maxPrice
