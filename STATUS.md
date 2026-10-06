@@ -1,6 +1,6 @@
 # Build Status
 
-Current engineering milestone: **7/14 complete — Pets, favourites & reviews next**
+Current engineering milestone: **8/14 complete — Partner operations next**
 
 | Phase | Status | Scope |
 |---|---|---|
@@ -11,41 +11,33 @@ Current engineering milestone: **7/14 complete — Pets, favourites & reviews ne
 | 5/14 | ✅ Complete | Argon2id auth, access JWTs, opaque refresh rotation/replay detection, HttpOnly cookies, session revocation, deny-by-default auth and RBAC |
 | 6/14 | ✅ Complete | Verified property catalogue, destination/search filters, breed/species/size compatibility, verified amenities, indexed price sorting, date-range availability discovery and facets |
 | 7/14 | ✅ Complete | Authoritative quote engine, pet ownership/policy validation, date-level pricing, per-user idempotency, serializable inventory reservation, nightly reservation ledger, cancellation and lifecycle audit |
-| 8/14 | ⏭️ Next | Pet-profile CRUD, favourites and verified-stay reviews |
-| 9/14 | Planned | Partner/property-management backend and operational booking transitions |
+| 8/14 | ✅ Complete | Owned pet CRUD/archive, booking-safe pet history, idempotent favourites, completed-stay reviews, moderation and transactional rating aggregates |
+| 9/14 | ⏭️ Next | Partner/property-management backend, inventory operations and booking check-in/completion transitions |
 | 10/14 | Planned | Full frontend design system and application shell |
 | 11/14 | Planned | Discovery/search/detail/booking frontend |
 | 12/14 | Planned | Account/trips/pets/partner frontend |
 | 13/14 | Planned | Tests, Redis-backed distributed rate limits, security hardening, observability |
 | 14/14 | Planned | CI/CD, deployment, migrations, final release verification |
 
-## Phase 7 booking guarantees
+## Phase 8 account/trust guarantees
 
-- Customer booking endpoints are restricted to authenticated USER accounts.
-- Quote and booking inputs use validated date-only travel dates and unique owned pet IDs.
-- Quotes validate room/property eligibility, guest capacity, pet ownership and full structured pet compatibility.
-- Final nightly price uses date-level inventory overrides when present.
-- Pet fees respect PER_STAY versus PER_NIGHT policy modes.
-- Tax is calculated from a configurable basis-point rule and persisted as a booking snapshot.
-- The frontend never supplies authoritative totals.
-- Booking creation re-runs the complete quote/availability logic inside a SERIALIZABLE transaction.
-- Inventory is incremented conditionally, preventing oversell at the write boundary.
-- Idempotency is scoped per user and backed by a request fingerprint.
-- Same-key/same-request replay returns the original booking without a second reservation.
-- Same-key/different-request reuse fails with conflict.
-- Every reserved night has a BookingInventoryReservation ownership row.
-- Customer cancellation releases only that booking's unreleased nightly ledger rows.
-- Cancellation and booking status changes append immutable BookingStatusEvent audit records.
-- Invalid booking-state transitions are rejected by a shared state machine.
-- Booking/pet data is snapshotted for historical integrity.
-- Customer booking reads are ownership-scoped and paginated.
-- India calendar rules use Asia/Kolkata rather than the deployment host timezone.
-
-## Product semantics
-
-A newly created booking currently enters CONFIRMED after successful inventory reservation. CONFIRMED means the reservation is confirmed; it does not assert that any external payment has been captured.
-
-Payment-provider integration is not represented as implemented.
+- Pet-profile create/read/update/archive operations are ownership-scoped to USER accounts.
+- Pet deletion is non-destructive archival; historical booking snapshots remain intact.
+- Archived pets cannot be selected for new quotes or bookings.
+- Nullable pet-profile fields can be explicitly cleared through update validation.
+- Favourites use the user/property composite key and idempotent save/remove behavior.
+- New favourites must point to a currently public, verified, bookable property.
+- Reviews can only be created from the authenticated user's COMPLETED booking.
+- The review property is derived from the booking rather than accepted from client input.
+- Review.bookingId remains unique, enforcing at most one review per stay at the database boundary.
+- New and edited reviews enter PENDING moderation.
+- Author review withdrawal is soft and permanent for that booking; historical evidence remains.
+- Public review feeds expose only PUBLISHED, non-withdrawn reviews.
+- Public author identity is reduced to display name rather than exposing account data.
+- Admin-only moderation records moderator, timestamp and optional note.
+- Published-review changes recompute property rating/count in the same serializable transaction.
+- Prototype historical rating counts are preserved as an imported baseline and combined with locally moderated reviews.
+- Seed reset order now covers booking reservation/status audit tables and seeded review moderation is internally consistent.
 
 ## Verification note
 
