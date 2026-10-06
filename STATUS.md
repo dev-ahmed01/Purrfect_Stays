@@ -1,6 +1,6 @@
 # Build Status
 
-Current engineering milestone: **8/14 complete — Partner operations next**
+Current engineering milestone: **9/14 complete — Frontend design system next**
 
 | Phase | Status | Scope |
 |---|---|---|
@@ -12,32 +12,42 @@ Current engineering milestone: **8/14 complete — Partner operations next**
 | 6/14 | ✅ Complete | Verified property catalogue, destination/search filters, breed/species/size compatibility, verified amenities, indexed price sorting, date-range availability discovery and facets |
 | 7/14 | ✅ Complete | Authoritative quote engine, pet ownership/policy validation, date-level pricing, per-user idempotency, serializable inventory reservation, nightly reservation ledger, cancellation and lifecycle audit |
 | 8/14 | ✅ Complete | Owned pet CRUD/archive, booking-safe pet history, idempotent favourites, completed-stay reviews, moderation and transactional rating aggregates |
-| 9/14 | ⏭️ Next | Partner/property-management backend, inventory operations and booking check-in/completion transitions |
-| 10/14 | Planned | Full frontend design system and application shell |
+| 9/14 | ✅ Complete | Partner-owned listing CRUD, draft/review/publish lifecycle, pet policy, images/amenities, room types, inventory calendar, partner dashboard/bookings and operational stay transitions |
+| 10/14 | ⏭️ Next | Full frontend design system, reusable UI primitives and application shell |
 | 11/14 | Planned | Discovery/search/detail/booking frontend |
 | 12/14 | Planned | Account/trips/pets/partner frontend |
 | 13/14 | Planned | Tests, Redis-backed distributed rate limits, security hardening, observability |
 | 14/14 | Planned | CI/CD, deployment, migrations, final release verification |
 
-## Phase 8 account/trust guarantees
+## Phase 9 partner/operations guarantees
 
-- Pet-profile create/read/update/archive operations are ownership-scoped to USER accounts.
-- Pet deletion is non-destructive archival; historical booking snapshots remain intact.
-- Archived pets cannot be selected for new quotes or bookings.
-- Nullable pet-profile fields can be explicitly cleared through update validation.
-- Favourites use the user/property composite key and idempotent save/remove behavior.
-- New favourites must point to a currently public, verified, bookable property.
-- Reviews can only be created from the authenticated user's COMPLETED booking.
-- The review property is derived from the booking rather than accepted from client input.
-- Review.bookingId remains unique, enforcing at most one review per stay at the database boundary.
-- New and edited reviews enter PENDING moderation.
-- Author review withdrawal is soft and permanent for that booking; historical evidence remains.
-- Public review feeds expose only PUBLISHED, non-withdrawn reviews.
-- Public author identity is reduced to display name rather than exposing account data.
-- Admin-only moderation records moderator, timestamp and optional note.
-- Published-review changes recompute property rating/count in the same serializable transaction.
-- Prototype historical rating counts are preserved as an imported baseline and combined with locally moderated reviews.
-- Seed reset order now covers booking reservation/status audit tables and seeded review moderation is internally consistent.
+- All partner property, room, inventory and booking operations are ownership-scoped.
+- New partner properties begin as DRAFT + UNVERIFIED with server-generated stable slugs.
+- Property lifecycle transitions are constrained by a shared state machine and recorded in PropertyStatusEvent.
+- Verification history remains separate in PropertyVerification.
+- Verified listing claims cannot be silently changed while a property remains public.
+- Core property claims, pet policy, images and amenities are draft-only edits.
+- Published/pending listings can be withdrawn to draft and must be reviewed again before publication.
+- Submission requires pet policy, image, active room type and open future inventory.
+- PENDING_REVIEW freezes listing/room definition changes; admin approval rechecks readiness transactionally.
+- Partner amenity claims are unverified until admin approval.
+- Room create/update operations transactionally recalculate the property's indexed starting price.
+- Room defaults cannot be reduced below already-reserved inventory.
+- Date-level inventory writes are bounded, unique by date, future-only and cannot reduce capacity below reserved units.
+- reservedUnits is not partner-controlled input.
+- Partner inventory writes and booking reservations both use serializable transactions.
+- Partner booking reads expose only reservations for owned properties.
+- Operational guest contact is exposed only to the owning partner for an existing reservation.
+- CONFIRMED -> CHECKED_IN and CHECKED_IN -> COMPLETED use the shared booking state machine plus India-business-date gates.
+- Operational booking transitions append BookingStatusEvent audit records.
+- Admin review defaults to the PENDING_REVIEW queue.
+- Approval verifies current amenity claims and records PUBLISHED + VERIFIED atomically.
+- Rejection returns the listing to DRAFT + REJECTED and clears amenity verification.
+- Admin suspension removes a listing from public discovery without destroying existing bookings.
+- Direct restoration requires the listing to remain VERIFIED and publication-ready.
+- Partner dashboard derives property/stay counts and upcoming arrivals from PostgreSQL rather than frontend state.
+- Dashboard reservation value is explicitly not represented as captured payment revenue.
+- Partner image management currently stores validated HTTPS asset references; binary object-storage upload is not represented as implemented.
 
 ## Verification note
 
