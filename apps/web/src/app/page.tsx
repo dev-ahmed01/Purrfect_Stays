@@ -85,7 +85,7 @@ export default function HomePage() {
           <div className="hero-stats" aria-label="Current demo catalogue highlights">
             <div><strong>8</strong><span>Seeded pet-friendly stays</span></div>
             <div><strong>8</strong><span>Indian destinations</span></div>
-            <div><strong>12</strong><span>Amenity categories</span></div>
+            <div><strong>12</strong><span>Amenity options</span></div>
             <div><strong>4.9★</strong><span>Top seeded rating</span></div>
           </div>
         </section>
