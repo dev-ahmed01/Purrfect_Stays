@@ -11,6 +11,7 @@ import { RequestLoggingInterceptor } from './common/logging/request-logging.inte
 import { validateEnv } from './config/env.js';
 import { DatabaseModule } from './database/database.module.js';
 import { HealthModule } from './health/health.module.js';
+import { PropertiesModule } from './properties/properties.module.js';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { HealthModule } from './health/health.module.js';
     DatabaseModule,
     ThrottlerModule.forRoot([{ ttl: 60_000, limit: 120 }]),
     AuthModule,
+    PropertiesModule,
     HealthModule,
   ],
   providers: [
