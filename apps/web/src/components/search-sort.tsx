@@ -40,7 +40,6 @@ export function SearchSort({ params }: { params: PublicSearchParams }) {
         <select
           defaultValue={firstParam(params, 'sort') ?? 'recommended'}
           name="sort"
-          onChange={undefined}
         >
           <option value="recommended">Recommended</option>
           <option value="rating">Highest rated</option>
