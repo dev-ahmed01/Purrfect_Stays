@@ -18,3 +18,41 @@ test('public discovery renders live catalogue and property detail', async ({ pag
   ).toBeVisible();
   await expect(page.getByRole('link', { name: /Sign in to book/i })).toBeVisible();
 });
+
+
+test('public surfaces keep basic accessibility contracts', async ({ page }) => {
+  await page.goto('/');
+
+  await expect(page.locator('main#main-content')).toBeVisible();
+  await expect(page.getByRole('link', { name: /Skip to content/i })).toHaveCount(1);
+
+  const imagesMissingAlt = await page.locator('img:not([alt])').count();
+  expect(imagesMissingAlt).toBe(0);
+
+  const unlabeledFields = await page
+    .locator('input:not([type="hidden"]), select, textarea')
+    .evaluateAll((elements) =>
+      elements.filter((element) => {
+        const control = element as HTMLInputElement;
+        return (
+          control.labels?.length === 0 &&
+          !control.getAttribute('aria-label') &&
+          !control.getAttribute('aria-labelledby')
+        );
+      }).length,
+    );
+  expect(unlabeledFields).toBe(0);
+
+  const unnamedButtons = await page.locator('button').evaluateAll((buttons) =>
+    buttons.filter((button) => {
+      const text = button.textContent?.trim();
+      return (
+        !text &&
+        !button.getAttribute('aria-label') &&
+        !button.getAttribute('aria-labelledby') &&
+        !button.getAttribute('title')
+      );
+    }).length,
+  );
+  expect(unnamedButtons).toBe(0);
+});
