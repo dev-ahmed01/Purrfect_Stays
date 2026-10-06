@@ -455,6 +455,7 @@ async function main() {
     data: {
       reference: 'PURR-GOA-28492',
       idempotencyKey: 'seed-completed-booking-0001',
+      requestHash: 'seed-completed-booking-request-hash',
       userId: petParent.id,
       propertyId: pawVilla.id,
       roomTypeId: pawVilla.roomTypeId,
@@ -467,8 +468,12 @@ async function main() {
       petFeePaise,
       serviceFeePaise,
       taxPaise,
+      taxRateBps: 1200,
       totalPaise: taxable + taxPaise,
       status: BookingStatus.COMPLETED,
+      confirmedAt: checkIn,
+      checkedInAt: checkIn,
+      completedAt: checkOut,
       pets: {
         create: {
           petId: bruno.id,
@@ -477,6 +482,29 @@ async function main() {
           breed: bruno.breed,
           size: bruno.size,
         },
+      },
+      statusEvents: {
+        create: [
+          {
+            fromStatus: null,
+            toStatus: BookingStatus.CONFIRMED,
+            actorUserId: petParent.id,
+            reason: 'Seeded demo booking',
+            createdAt: checkIn,
+          },
+          {
+            fromStatus: BookingStatus.CONFIRMED,
+            toStatus: BookingStatus.CHECKED_IN,
+            actorUserId: partner.id,
+            createdAt: checkIn,
+          },
+          {
+            fromStatus: BookingStatus.CHECKED_IN,
+            toStatus: BookingStatus.COMPLETED,
+            actorUserId: partner.id,
+            createdAt: checkOut,
+          },
+        ],
       },
     },
   });
