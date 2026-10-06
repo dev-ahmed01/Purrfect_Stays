@@ -390,6 +390,7 @@ async function main() {
         postalCode: seed.postalCode,
         averageRating: seed.rating,
         reviewCount: seed.reviewCount,
+        startingPricePaise: seed.rate,
         featured: seed.featured,
         publishedAt: new Date(),
         petPolicy: { create: seed.policy },
