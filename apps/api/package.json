@@ -8,7 +8,8 @@
     "start": "node dist/main.js",
     "lint": "tsc --noEmit",
     "typecheck": "tsc --noEmit",
-    "test": "jest --passWithNoTests"
+    "test": "jest --runInBand",
+    "test:coverage": "jest --runInBand --coverage"
   },
   "dependencies": {
     "@nestjs/common": "^11.1.6",
@@ -24,7 +25,8 @@
     "argon2": "^0.44.0",
     "cookie-parser": "^1.4.7",
     "jose": "^6.1.0",
-    "@nestjs/throttler": "^6.4.0"
+    "@nestjs/throttler": "^6.4.0",
+    "redis": "^6.3.0"
   },
   "devDependencies": {
     "@nestjs/cli": "^11.0.10",
