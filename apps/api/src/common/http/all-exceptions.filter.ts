@@ -139,6 +139,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
         return 'CONFLICT';
       case HttpStatus.TOO_MANY_REQUESTS:
         return 'RATE_LIMITED';
+      case HttpStatus.SERVICE_UNAVAILABLE:
+        return 'SERVICE_UNAVAILABLE';
       default:
         return status >= 500 ? 'INTERNAL_ERROR' : 'BAD_REQUEST';
     }
