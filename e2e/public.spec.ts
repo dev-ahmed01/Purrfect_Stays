@@ -23,7 +23,9 @@ test('public discovery renders live catalogue and property detail', async ({ pag
 test('public surfaces keep basic accessibility contracts', async ({ page }) => {
   await page.goto('/');
 
-  await expect(page.locator('main#main-content')).toBeVisible();
+  const main = page.locator('main#main-content');
+  await expect(main).toHaveCount(1);
+  await expect(main).toBeVisible();
   await expect(page.getByRole('link', { name: /Skip to content/i })).toHaveCount(1);
 
   const imagesMissingAlt = await page.locator('img:not([alt])').count();
