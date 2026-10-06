@@ -7,6 +7,7 @@ export type ApiErrorCode =
   | 'VALIDATION_ERROR'
   | 'RATE_LIMITED'
   | 'DATABASE_CONFLICT'
+  | 'SERVICE_UNAVAILABLE'
   | 'INTERNAL_ERROR';
 
 export type ApiErrorResponse = {
