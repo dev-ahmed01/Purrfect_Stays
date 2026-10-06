@@ -52,6 +52,7 @@ export const propertySearchSchema = paginationSchema
     pets: z.coerce.number().int().min(0).max(10).optional(),
     species: petSpeciesSchema.optional(),
     size: petSizeSchema.optional(),
+    breed: z.string().trim().min(1).max(120).transform((value) => value.toLowerCase()).optional(),
     propertyType: propertyTypeSchema.optional(),
     minPrice: z.coerce.number().nonnegative().max(1_000_000).optional(),
     maxPrice: z.coerce.number().nonnegative().max(1_000_000).optional(),
@@ -100,11 +101,14 @@ export const propertySearchSchema = paginationSchema
       });
     }
 
-    if (value.pets === 0 && (value.species !== undefined || value.size !== undefined)) {
+    if (
+      value.pets === 0 &&
+      (value.species !== undefined || value.size !== undefined || value.breed !== undefined)
+    ) {
       context.addIssue({
         code: 'custom',
         path: ['pets'],
-        message: 'Pet species or size filters require at least one pet',
+        message: 'Pet species, size or breed filters require at least one pet',
       });
     }
   });
