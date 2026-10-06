@@ -31,11 +31,22 @@ test('customer auth, pet, quote, idempotent booking and cancellation', async () 
     });
     expect(register.ok()).toBeTruthy();
     const registerBody = await register.json();
-    const accessToken = registerBody.data.accessToken as string;
-    expect(accessToken).toBeTruthy();
+    const initialAccessToken = registerBody.data.accessToken as string;
+    expect(initialAccessToken).toBeTruthy();
 
     const refresh = await api.post('/auth/refresh');
     expect(refresh.ok()).toBeTruthy();
+    const refreshBody = await refresh.json();
+    const accessToken = refreshBody.data.accessToken as string;
+    expect(accessToken).toBeTruthy();
+    expect(accessToken).not.toBe(initialAccessToken);
+
+    const staleSession = await api.get('/auth/me', {
+      headers: {
+        Authorization: 'Bearer ' + initialAccessToken,
+      },
+    });
+    expect(staleSession.status()).toBe(401);
 
     const authHeaders = {
       Authorization: 'Bearer ' + accessToken,
