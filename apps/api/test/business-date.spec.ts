@@ -1,3 +1,4 @@
+import { jest } from '@jest/globals';
 import { nightsBetween, todayInIndia } from '../src/bookings/business-date.js';
 
 describe('India business date', () => {
