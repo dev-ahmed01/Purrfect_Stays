@@ -21,7 +21,7 @@ export default function PartnerOverviewPage() {
           <div className="workspace-placeholder">
             <StatusBadge tone="success">Shell ready</StatusBadge>
             <h2>The partner workspace foundation is live.</h2>
-            <p>Phase 12 will bind these surfaces to the partner APIs completed in Phase 9.</p>
+            <p>Use this workspace to manage listings, inventory and guest stays.</p>
           </div>
         </CardBody>
       </Card>
