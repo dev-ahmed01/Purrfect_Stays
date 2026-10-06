@@ -11,24 +11,94 @@ export const paginationSchema = z.object({
   pageSize: z.coerce.number().int().min(1).max(50).default(12),
 });
 
-export const propertySearchSchema = paginationSchema.extend({
-  destination: z.string().trim().min(1).optional(),
-  checkIn: z.coerce.date().optional(),
-  checkOut: z.coerce.date().optional(),
-  guests: z.coerce.number().int().positive().optional(),
-  pets: z.coerce.number().int().min(0).optional(),
-  species: petSpeciesSchema.optional(),
-  size: petSizeSchema.optional(),
-  propertyType: z.string().trim().optional(),
-  minPrice: z.coerce.number().nonnegative().optional(),
-  maxPrice: z.coerce.number().nonnegative().optional(),
-  minRating: z.coerce.number().min(0).max(5).optional(),
-  amenities: z
-    .union([z.string(), z.array(z.string())])
-    .transform((value) => (Array.isArray(value) ? value : value.split(',')))
-    .optional(),
-  sort: z.enum(['recommended', 'price_asc', 'price_desc', 'rating']).default('recommended'),
+export const propertyTypeSchema = z.enum([
+  'VILLA',
+  'HOMESTAY',
+  'RESORT',
+  'HOTEL',
+  'COTTAGE',
+  'APARTMENT',
+]);
+
+const amenitiesQuerySchema = z
+  .union([z.string(), z.array(z.string())])
+  .transform((value) => (Array.isArray(value) ? value : value.split(',')))
+  .transform((values) =>
+    Array.from(
+      new Set(
+        values
+          .map((value) => value.trim().toLowerCase())
+          .filter(Boolean),
+      ),
+    ),
+  )
+  .refine((values) => values.length <= 20, 'A maximum of 20 amenities can be requested');
+
+export const propertySearchSchema = paginationSchema
+  .extend({
+    destination: z.string().trim().min(1).max(100).optional(),
+    checkIn: z.coerce.date().optional(),
+    checkOut: z.coerce.date().optional(),
+    guests: z.coerce.number().int().min(1).max(20).optional(),
+    pets: z.coerce.number().int().min(0).max(10).optional(),
+    species: petSpeciesSchema.optional(),
+    size: petSizeSchema.optional(),
+    propertyType: propertyTypeSchema.optional(),
+    minPrice: z.coerce.number().nonnegative().max(1_000_000).optional(),
+    maxPrice: z.coerce.number().nonnegative().max(1_000_000).optional(),
+    minRating: z.coerce.number().min(0).max(5).optional(),
+    amenities: amenitiesQuerySchema.optional(),
+    sort: z.enum(['recommended', 'price_asc', 'price_desc', 'rating']).default('recommended'),
+  })
+  .superRefine((value, context) => {
+    if ((value.checkIn && !value.checkOut) || (!value.checkIn && value.checkOut)) {
+      context.addIssue({
+        code: 'custom',
+        path: value.checkIn ? ['checkOut'] : ['checkIn'],
+        message: 'Check-in and check-out must be supplied together',
+      });
+    }
+
+    if (value.checkIn && value.checkOut && value.checkOut <= value.checkIn) {
+      context.addIssue({
+        code: 'custom',
+        path: ['checkOut'],
+        message: 'Check-out must be after check-in',
+      });
+    }
+
+    if (
+      value.minPrice !== undefined &&
+      value.maxPrice !== undefined &&
+      value.minPrice > value.maxPrice
+    ) {
+      context.addIssue({
+        code: 'custom',
+        path: ['maxPrice'],
+        message: 'Maximum price must be greater than or equal to minimum price',
+      });
+    }
+
+    if (value.pets === 0 && (value.species !== undefined || value.size !== undefined)) {
+      context.addIssue({
+        code: 'custom',
+        path: ['pets'],
+        message: 'Pet species or size filters require at least one pet',
+      });
+    }
+  });
+
+export const featuredPropertiesQuerySchema = z.object({
+  limit: z.coerce.number().int().min(1).max(12).default(6),
 });
+
+export const destinationsQuerySchema = z.object({
+  limit: z.coerce.number().int().min(1).max(50).default(12),
+});
+
+export type PropertyType = z.infer<typeof propertyTypeSchema>;
+export type FeaturedPropertiesQuery = z.infer<typeof featuredPropertiesQuerySchema>;
+export type DestinationsQuery = z.infer<typeof destinationsQuerySchema>;
 
 export const quoteRequestSchema = z
   .object({
