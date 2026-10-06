@@ -1,26 +1,32 @@
 import Link from 'next/link';
+import { DestinationCard } from '../components/destination-card';
+import { PropertyCard, type PropertyCardData } from '../components/property-card';
 import { SearchPanel } from '../components/search-panel';
 import { SectionHeading } from '../components/section-heading';
+import { SiteFooter } from '../components/site-footer';
 import { SiteHeader } from '../components/site-header';
 
 const destinations = [
-  { name: 'Goa', stays: 42, icon: '🏖️' },
-  { name: 'Coorg', stays: 28, icon: '🌿' },
-  { name: 'Ooty', stays: 19, icon: '⛰️' },
-  { name: 'Manali', stays: 31, icon: '🏔️' },
-  { name: 'Jaipur', stays: 22, icon: '🏰' },
-  { name: 'Pondicherry', stays: 17, icon: '🌊' },
+  { name: 'Goa', stays: 1, icon: '🏖️' },
+  { name: 'Coorg', stays: 1, icon: '🌿' },
+  { name: 'Ooty', stays: 1, icon: '⛰️' },
+  { name: 'Manali', stays: 1, icon: '🏔️' },
+  { name: 'Jaipur', stays: 1, icon: '🏰' },
+  { name: 'Pondicherry', stays: 1, icon: '🌊' },
 ];
 
-const featured = [
+const featured: PropertyCardData[] = [
   {
     slug: 'the-paw-villa',
     name: 'The Paw Villa',
     location: 'Anjuna, Goa',
     type: 'Villa',
-    price: 5800,
+    pricePaise: 580_000,
     rating: 4.9,
-    icon: '🏖️',
+    reviewCount: 127,
+    imageUrl:
+      'https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?auto=format&fit=crop&w=1200&q=80',
+    imageAlt: 'The Paw Villa property exterior',
     tags: ['Pet-friendly', 'Pool', 'Grooming', 'Vet nearby'],
   },
   {
@@ -28,9 +34,12 @@ const featured = [
     name: 'Forest Paws Homestay',
     location: 'Madikeri, Coorg',
     type: 'Homestay',
-    price: 3400,
+    pricePaise: 340_000,
     rating: 4.8,
-    icon: '🌿',
+    reviewCount: 88,
+    imageUrl:
+      'https://images.unsplash.com/photo-1510798831971-661eb04b3739?auto=format&fit=crop&w=1200&q=80',
+    imageAlt: 'Forest Paws Homestay property exterior',
     tags: ['Pet-friendly', 'Large garden', 'Walking trails'],
   },
   {
@@ -38,28 +47,31 @@ const featured = [
     name: 'Snow Peaks Pet Resort',
     location: 'Old Manali, Himachal Pradesh',
     type: 'Resort',
-    price: 7200,
+    pricePaise: 720_000,
     rating: 4.9,
-    icon: '🏔️',
+    reviewCount: 104,
+    imageUrl:
+      'https://images.unsplash.com/photo-1605540436563-5bca919ae766?auto=format&fit=crop&w=1200&q=80',
+    imageAlt: 'Snow Peaks Pet Resort mountain property',
     tags: ['Pet-friendly', 'Grooming', 'In-house vet'],
   },
 ];
 
 const reasons = [
-  ['✓', 'Pet-Approved Stays', 'Policies and facilities are recorded explicitly so you know what your pet is walking into.'],
-  ['🩺', 'Vet Support Nearby', 'Emergency and nearby veterinary support can be surfaced with each property.'],
-  ['✂️', 'Grooming & Play', 'Find properties with grooming, gardens, walking space and dedicated play areas.'],
-  ['📋', 'Verified Facilities', 'Amenity and pet-policy information is structured instead of buried in vague listing copy.'],
+  ['✓', 'Pet-Approved Stays', 'Structured pet policies make the rules clear before you travel.'],
+  ['🩺', 'Vet Support Nearby', 'Verified facilities can surface nearby or in-house veterinary support.'],
+  ['✂️', 'Grooming & Play', 'Find grooming, gardens, walking space and dedicated play areas.'],
+  ['📋', 'Verified Facilities', 'Amenity claims are reviewed before they appear as verified publicly.'],
 ];
 
 export default function HomePage() {
   return (
     <>
       <SiteHeader />
-      <main>
+      <main id="main-content">
         <section className="hero">
           <div className="hero-glow" aria-hidden="true" />
-          <p className="hero-badge">🐶 India&apos;s pet travel platform</p>
+          <p className="hero-badge">🐶 Pet-first stays across India</p>
           <h1>
             Travel Across India
             <br />
@@ -67,14 +79,14 @@ export default function HomePage() {
           </h1>
           <p className="hero-copy">
             Discover pet-friendly stays with clear policies, grooming, vets and play areas —
-            all in one place.
+            all in one calm booking experience.
           </p>
           <SearchPanel />
-          <div className="hero-stats" aria-label="Purrfect Stays platform highlights">
-            <div><strong>2,400+</strong><span>Pet-friendly stays</span></div>
-            <div><strong>85+</strong><span>Cities across India</span></div>
-            <div><strong>48,000+</strong><span>Happy pet parents</span></div>
-            <div><strong>4.9★</strong><span>Average rating</span></div>
+          <div className="hero-stats" aria-label="Current demo catalogue highlights">
+            <div><strong>8</strong><span>Seeded pet-friendly stays</span></div>
+            <div><strong>8</strong><span>Indian destinations</span></div>
+            <div><strong>12</strong><span>Amenity categories</span></div>
+            <div><strong>4.9★</strong><span>Top seeded rating</span></div>
           </div>
         </section>
 
@@ -82,21 +94,11 @@ export default function HomePage() {
           <SectionHeading
             eyebrow="Explore India"
             title="Popular Pet-Friendly Destinations"
-            description="From beaches to mountains — find a stay where your pet belongs too."
+            description="From beaches to mountains — start with a destination and refine by the pet travelling with you."
           />
           <div className="destination-grid">
             {destinations.map((destination) => (
-              <Link
-                className="destination-card"
-                href={`/stays?destination=${encodeURIComponent(destination.name)}`}
-                key={destination.name}
-              >
-                <div className="destination-art" aria-hidden="true">{destination.icon}</div>
-                <div className="destination-info">
-                  <strong>{destination.name}</strong>
-                  <span>{destination.stays} stays</span>
-                </div>
-              </Link>
+              <DestinationCard key={destination.name} {...destination} />
             ))}
           </div>
         </section>
@@ -105,33 +107,11 @@ export default function HomePage() {
           <SectionHeading
             eyebrow="Top Picks"
             title="Featured Pet-Friendly Stays"
-            description="A first look at the seed catalogue that will become database-driven in Phase 3."
+            description="A polished preview of the seeded catalogue. Phase 11 connects these same cards to the live search API."
           />
           <div className="property-grid">
             {featured.map((property) => (
-              <article className="property-card" key={property.slug}>
-                <Link className="property-image" href={`/stays/${property.slug}`} aria-label={property.name}>
-                  <span aria-hidden="true">{property.icon}</span>
-                </Link>
-                <div className="property-body">
-                  <div className="property-title-row">
-                    <h3>{property.name}</h3>
-                    <span className="rating-badge">★ {property.rating}</span>
-                  </div>
-                  <p className="property-location">📍 {property.location} · {property.type}</p>
-                  <div className="tag-row">
-                    {property.tags.map((tag) => <span className="pet-tag" key={tag}>{tag}</span>)}
-                  </div>
-                  <div className="property-footer">
-                    <p className="property-price">
-                      <strong>₹{property.price.toLocaleString('en-IN')}</strong> <span>/ night</span>
-                    </p>
-                    <Link className="button button-primary button-small" href={`/stays/${property.slug}`}>
-                      View Stay
-                    </Link>
-                  </div>
-                </div>
-              </article>
+              <PropertyCard key={property.slug} property={property} />
             ))}
           </div>
           <div className="section-action">
@@ -156,13 +136,13 @@ export default function HomePage() {
           <SectionHeading
             eyebrow="Pet Services"
             title="Everything Your Pet Needs"
-            description="The platform will grow beyond stays without losing the simple travel-first experience."
+            description="Search around the travel experience without losing the simple stay-first hierarchy."
           />
           <div className="service-grid">
             {[
               ['🛝', 'Playground', 'Outdoor play areas & agility zones'],
               ['✂️', 'Grooming', 'Baths, trims & spa services'],
-              ['🚗', 'Travel Assist', 'Pet-safe transport'],
+              ['🚗', 'Travel Assist', 'Pet-safe travel support'],
               ['🍖', 'Pet Food', 'Meals & special diets'],
               ['🩺', 'Vet / Emergency', 'Nearby veterinary support'],
             ].map(([icon, title, body]) => (
@@ -175,10 +155,7 @@ export default function HomePage() {
           </div>
         </section>
       </main>
-      <footer className="site-footer">
-        <p className="footer-brand">🐾 Purrfect</p>
-        <p>Pet-friendly travel, designed around the pet travelling with you.</p>
-      </footer>
+      <SiteFooter />
     </>
   );
 }
