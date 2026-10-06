@@ -162,6 +162,7 @@ jobs:
             sleep 1
           done
 
+          pnpm smoke:release
           pnpm test:e2e
 
       - name: Upload verification logs
