@@ -13,7 +13,7 @@ export function AuthCard({
   footer?: ReactNode;
 }) {
   return (
-    <main className="auth-page">
+    <main className="auth-page" id="main-content">
       <div className="auth-decoration auth-decoration-one" aria-hidden="true" />
       <div className="auth-decoration auth-decoration-two" aria-hidden="true" />
       <section className="auth-card">
