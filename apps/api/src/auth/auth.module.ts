@@ -9,6 +9,7 @@ import { AuthService } from './auth.service.js';
 import { PasswordService } from './password.service.js';
 import { RefreshTokenService } from './refresh-token.service.js';
 import { RolesGuard } from './roles.guard.js';
+import { NoStoreInterceptor } from '../common/http/no-store.interceptor.js';
 
 @Module({
   controllers: [AuthController],
@@ -19,6 +20,7 @@ import { RolesGuard } from './roles.guard.js';
     RefreshTokenService,
     AuthCookieService,
     BrowserOriginGuard,
+    NoStoreInterceptor,
     {
       provide: APP_GUARD,
       useClass: AccessTokenGuard,
