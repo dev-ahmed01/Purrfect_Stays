@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { AuthModule } from './auth/auth.module.js';
+import { BookingsModule } from './bookings/bookings.module.js';
 import { RequestContextModule } from './common/context/request-context.module.js';
 import { AllExceptionsFilter } from './common/http/all-exceptions.filter.js';
 import { RequestIdMiddleware } from './common/http/request-id.middleware.js';
@@ -23,6 +24,7 @@ import { PropertiesModule } from './properties/properties.module.js';
     DatabaseModule,
     ThrottlerModule.forRoot([{ ttl: 60_000, limit: 120 }]),
     AuthModule,
+    BookingsModule,
     PropertiesModule,
     HealthModule,
   ],
