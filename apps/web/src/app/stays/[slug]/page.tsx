@@ -68,14 +68,20 @@ export default async function PropertyDetailPage({
     ),
   ]);
 
-  const indiaBusinessDate = new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'Asia/Kolkata',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).format(new Date());
+  const dateParts = Object.fromEntries(
+    new Intl.DateTimeFormat('en-GB', {
+      timeZone: 'Asia/Kolkata',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    })
+      .formatToParts(new Date())
+      .map((part) => [part.type, part.value]),
+  );
+  const indiaBusinessDate = `${dateParts.year}-${dateParts.month}-${dateParts.day}`;
 
   const returnQuery = catalogueQueryString(query);
+  const returnTo = `/stays/${slug}?${returnQuery}`;
   const policy = property.petPolicy;
   const species = [
     policy?.allowsDogs ? 'Dogs' : null,
@@ -230,6 +236,7 @@ export default async function PropertyDetailPage({
               initialGuests={firstParam(query, 'guests')}
               minDate={indiaBusinessDate}
               property={property}
+              returnTo={returnTo}
             />
             <div className="detail-pet-first-note">
               <PawPrint size={18} aria-hidden="true" />
