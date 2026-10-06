@@ -1,5 +1,5 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { AuthModule } from './auth/auth.module.js';
@@ -17,6 +17,9 @@ import { PetsModule } from './pets/pets.module.js';
 import { PartnerModule } from './partner/partner.module.js';
 import { PropertiesModule } from './properties/properties.module.js';
 import { ReviewsModule } from './reviews/reviews.module.js';
+import { RedisModule } from './redis/redis.module.js';
+import { RedisThrottlerStorage } from './redis/redis-throttler.storage.js';
+import type { AppEnv } from './config/env.js';
 
 @Module({
   imports: [
@@ -26,7 +29,24 @@ import { ReviewsModule } from './reviews/reviews.module.js';
     }),
     RequestContextModule,
     DatabaseModule,
-    ThrottlerModule.forRoot([{ ttl: 60_000, limit: 120 }]),
+    RedisModule,
+    ThrottlerModule.forRootAsync({
+      imports: [RedisModule],
+      inject: [RedisThrottlerStorage, ConfigService],
+      useFactory: (
+        storage: RedisThrottlerStorage,
+        config: ConfigService<AppEnv>,
+      ) => ({
+        throttlers: [
+          {
+            ttl: config.get('RATE_LIMIT_TTL_MS', { infer: true }) ?? 60_000,
+            limit: config.get('RATE_LIMIT_LIMIT', { infer: true }) ?? 120,
+          },
+        ],
+        storage,
+        setHeaders: true,
+      }),
+    }),
     AuthModule,
     BookingsModule,
     PetsModule,
