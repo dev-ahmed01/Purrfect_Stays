@@ -4,17 +4,20 @@ import { CalendarDays, Heart, PawPrint, Star } from 'lucide-react';
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '../../auth/auth-provider';
-import type { BookingView, MyReview, PetProfile } from '../../lib/catalogue-types';
+import type { PaginationMeta, PetProfile } from '../../lib/catalogue-types';
 import { ApiError } from '../../lib/api-types';
 import { Card, CardBody } from '../ui/card';
 import { Alert } from '../ui/alert';
 import { PageHeader } from '../ui/page-header';
 
 type Overview = {
-  bookings: BookingView[];
+  bookingTotal: number;
+  upcomingConfirmed: number;
+  completed: number;
   pets: PetProfile[];
   favourites: Array<unknown>;
-  reviews: MyReview[];
+  reviewTotal: number;
+  publishedReviews: number;
 };
 
 export function AccountOverviewClient() {
@@ -25,18 +28,24 @@ export function AccountOverviewClient() {
   const load = useCallback(async () => {
     setError(null);
     try {
-      const [bookings, pets, favourites, reviews] = await Promise.all([
-        request<{ items: BookingView[] }>('/bookings?page=1&pageSize=50'),
+      const [bookings, confirmed, completed, pets, favourites, reviews, publishedReviews] = await Promise.all([
+        request<{ meta: PaginationMeta }>('/bookings?page=1&pageSize=1'),
+        request<{ meta: PaginationMeta }>('/bookings?status=CONFIRMED&page=1&pageSize=1'),
+        request<{ meta: PaginationMeta }>('/bookings?status=COMPLETED&page=1&pageSize=1'),
         request<{ items: PetProfile[] }>('/pets'),
         request<{ items: Array<unknown> }>('/favourites'),
-        request<{ items: MyReview[] }>('/reviews?page=1&pageSize=50'),
+        request<{ meta: PaginationMeta }>('/reviews?page=1&pageSize=1'),
+        request<{ meta: PaginationMeta }>('/reviews?status=PUBLISHED&page=1&pageSize=1'),
       ]);
 
       setData({
-        bookings: bookings.items,
+        bookingTotal: bookings.meta.totalItems,
+        upcomingConfirmed: confirmed.meta.totalItems,
+        completed: completed.meta.totalItems,
         pets: pets.items,
         favourites: favourites.items,
-        reviews: reviews.items,
+        reviewTotal: reviews.meta.totalItems,
+        publishedReviews: publishedReviews.meta.totalItems,
       });
     } catch (requestError) {
       setError(requestError instanceof ApiError ? requestError.message : 'We could not load your account overview.');
@@ -46,9 +55,6 @@ export function AccountOverviewClient() {
   useEffect(() => {
     void load();
   }, [load]);
-
-  const upcoming = data?.bookings.filter((booking) => booking.status === 'CONFIRMED').length ?? 0;
-  const completed = data?.bookings.filter((booking) => booking.status === 'COMPLETED').length ?? 0;
 
   return (
     <>
@@ -63,7 +69,7 @@ export function AccountOverviewClient() {
 
       <div className="summary-grid">
         <Link href="/account/trips">
-          <Card><CardBody className="summary-card"><CalendarDays /><span>Upcoming trips</span><strong>{data ? upcoming : '—'}</strong></CardBody></Card>
+          <Card><CardBody className="summary-card"><CalendarDays /><span>Upcoming trips</span><strong>{data ? data.upcomingConfirmed : '—'}</strong></CardBody></Card>
         </Link>
         <Link href="/account/pets">
           <Card><CardBody className="summary-card"><PawPrint /><span>Active pets</span><strong>{data ? data.pets.length : '—'}</strong></CardBody></Card>
@@ -84,8 +90,8 @@ export function AccountOverviewClient() {
               <CalendarDays size={20} aria-hidden="true" />
             </div>
             <div className="overview-metrics">
-              <div><strong>{data ? completed : '—'}</strong><span>Completed</span></div>
-              <div><strong>{data ? data.bookings.length : '—'}</strong><span>Total reservations</span></div>
+              <div><strong>{data ? data.completed : '—'}</strong><span>Completed</span></div>
+              <div><strong>{data ? data.bookingTotal : '—'}</strong><span>Total reservations</span></div>
             </div>
             <Link className="button button-outline button-sm" href="/account/trips">Open trips</Link>
           </CardBody>
@@ -101,8 +107,8 @@ export function AccountOverviewClient() {
               <Star size={20} aria-hidden="true" />
             </div>
             <div className="overview-metrics">
-              <div><strong>{data ? data.reviews.length : '—'}</strong><span>Written</span></div>
-              <div><strong>{data ? data.reviews.filter((review) => review.status === 'PUBLISHED').length : '—'}</strong><span>Published</span></div>
+              <div><strong>{data ? data.reviewTotal : '—'}</strong><span>Written</span></div>
+              <div><strong>{data ? data.publishedReviews : '—'}</strong><span>Published</span></div>
             </div>
             <Link className="button button-outline button-sm" href="/account/reviews">Manage reviews</Link>
           </CardBody>
