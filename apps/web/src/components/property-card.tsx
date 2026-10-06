@@ -16,14 +16,17 @@ export type PropertyCardData = {
   imageUrl?: string | null;
   imageAlt?: string;
   tags: string[];
+  hrefQuery?: string;
 };
 
 export function PropertyCard({ property }: { property: PropertyCardData }) {
+  const href = `/stays/${property.slug}${property.hrefQuery ? `?${property.hrefQuery}` : ''}`;
+
   return (
     <article className="property-card">
       <Link
         className="property-image property-image-real"
-        href={`/stays/${property.slug}`}
+        href={href}
         aria-label={`View ${property.name}`}
       >
         {property.imageUrl ? (
@@ -39,7 +42,7 @@ export function PropertyCard({ property }: { property: PropertyCardData }) {
       </Link>
       <div className="property-body">
         <div className="property-title-row">
-          <h3><Link href={`/stays/${property.slug}`}>{property.name}</Link></h3>
+          <h3><Link href={href}>{property.name}</Link></h3>
           <RatingBadge rating={property.rating} count={property.reviewCount} />
         </div>
         <p className="property-location">
@@ -56,7 +59,7 @@ export function PropertyCard({ property }: { property: PropertyCardData }) {
             <strong>{formatInrPaise(property.pricePaise)}</strong>{' '}
             <span>/ night</span>
           </p>
-          <Link className="button button-primary button-sm" href={`/stays/${property.slug}`}>
+          <Link className="button button-primary button-sm" href={href}>
             View Stay
           </Link>
         </div>
