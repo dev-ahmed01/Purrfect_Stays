@@ -2,6 +2,7 @@ import { Controller, Get, ServiceUnavailableException } from '@nestjs/common';
 import { SkipThrottle } from '@nestjs/throttler';
 import { Public } from '../auth/public.decorator.js';
 import { DatabaseHealthService } from '../common/database/database-health.service.js';
+import { MetricsService } from '../common/observability/metrics.service.js';
 import { RedisHealthService } from '../redis/redis-health.service.js';
 
 @Public()
@@ -11,6 +12,7 @@ export class HealthController {
   constructor(
     private readonly databaseHealth: DatabaseHealthService,
     private readonly redisHealth: RedisHealthService,
+    private readonly metricsService: MetricsService,
   ) {}
 
   @Get()
@@ -20,6 +22,11 @@ export class HealthController {
       service: 'purrfect-api',
       timestamp: new Date().toISOString(),
     };
+  }
+
+  @Get('metrics')
+  metrics() {
+    return this.metricsService.snapshot();
   }
 
   @Get('ready')
