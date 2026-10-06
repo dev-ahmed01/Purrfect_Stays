@@ -59,23 +59,26 @@ export function AuthForm({ mode }: { mode: 'login' | 'signup' }) {
             password: form.get('password'),
           };
 
-    const parsed =
-      mode === 'login'
-        ? loginSchema.safeParse(raw)
-        : registerSchema.safeParse(raw);
-
-    if (!parsed.success) {
-      setErrors(issuesToFields(parsed.error.issues));
-      return;
-    }
-
     setSubmitting(true);
 
     try {
-      const user =
-        mode === 'login'
-          ? await login(parsed.data)
-          : await register(parsed.data);
+      let user: AuthUser;
+
+      if (mode === 'login') {
+        const parsed = loginSchema.safeParse(raw);
+        if (!parsed.success) {
+          setErrors(issuesToFields(parsed.error.issues));
+          return;
+        }
+        user = await login(parsed.data);
+      } else {
+        const parsed = registerSchema.safeParse(raw);
+        if (!parsed.success) {
+          setErrors(issuesToFields(parsed.error.issues));
+          return;
+        }
+        user = await register(parsed.data);
+      }
 
       router.replace(workspaceFor(user));
       router.refresh();
