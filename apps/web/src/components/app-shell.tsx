@@ -52,11 +52,10 @@ export function AppShell({
 
         <nav className="app-nav" aria-label={`${workspaceLabel} navigation`}>
           {navItems.map((item) => {
+            const isWorkspaceRoot = ['/account', '/partner', '/admin'].includes(item.href);
             const active =
               pathname === item.href ||
-              (item.href !== '/account' &&
-                item.href !== '/partner' &&
-                pathname.startsWith(`${item.href}/`));
+              (!isWorkspaceRoot && pathname.startsWith(`${item.href}/`));
             const Icon = item.icon;
 
             return (
