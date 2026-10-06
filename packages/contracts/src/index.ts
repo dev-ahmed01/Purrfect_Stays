@@ -218,10 +218,10 @@ export const updatePetSchema = z
     species: petProfileFields.species.optional(),
     breed: petProfileFields.breed.optional(),
     size: petProfileFields.size.optional(),
-    weightKg: petProfileFields.weightKg,
-    birthDate: petProfileFields.birthDate,
+    weightKg: z.union([z.coerce.number().positive().max(200), z.null()]).optional(),
+    birthDate: z.union([dateOnlySchema, z.null()]).optional(),
     vaccinated: petProfileFields.vaccinated.optional(),
-    specialNeeds: petProfileFields.specialNeeds,
+    specialNeeds: z.union([z.string().trim().max(1000), z.null()]).optional(),
   })
   .refine((value) => Object.values(value).some((item) => item !== undefined), {
     message: 'At least one pet field must be provided',
