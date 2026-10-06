@@ -17,30 +17,34 @@ export function RoleGate({
 
   if (status === 'loading') {
     return (
-      <div className="shell-loading" aria-live="polite">
+      <main className="shell-loading" id="main-content" aria-live="polite">
         <div className="skeleton skeleton-line skeleton-line-wide" />
         <div className="skeleton skeleton-card" />
-      </div>
+      </main>
     );
   }
 
   if (status === 'anonymous' || !user) {
     return (
-      <EmptyState
-        title="Sign in to continue"
-        description="This area is connected to your Purrfect Stays account."
-        action={<Link className="button button-primary" href="/login">Sign in</Link>}
-      />
+      <main className="route-state" id="main-content">
+        <EmptyState
+          title="Sign in to continue"
+          description="This area is connected to your Purrfect Stays account."
+          action={<Link className="button button-primary" href="/login">Sign in</Link>}
+        />
+      </main>
     );
   }
 
   if (!allow.includes(user.role)) {
     return (
-      <EmptyState
-        title="This area is not available for your account"
-        description="Your signed-in role does not have access to this workspace."
-        action={<Link className="button button-outline" href="/">Back home</Link>}
-      />
+      <main className="route-state" id="main-content">
+        <EmptyState
+          title="This area is not available for your account"
+          description="Your signed-in role does not have access to this workspace."
+          action={<Link className="button button-outline" href="/">Back home</Link>}
+        />
+      </main>
     );
   }
 
