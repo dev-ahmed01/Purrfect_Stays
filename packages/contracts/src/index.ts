@@ -479,7 +479,7 @@ export const partnerBookingTransitionSchema = z.object({
 });
 
 export const adminListingQueueQuerySchema = paginationSchema.extend({
-  status: z.enum(['PENDING_REVIEW', 'PUBLISHED', 'SUSPENDED']).optional(),
+  status: propertyStatusSchema.default('PENDING_REVIEW'),
   verificationStatus: verificationStatusSchema.optional(),
 });
 
