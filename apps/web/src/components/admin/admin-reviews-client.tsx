@@ -15,11 +15,13 @@ import { EmptyState } from '../ui/empty-state';
 import { FieldFrame, SelectInput, TextArea } from '../ui/form-field';
 import { PageHeader } from '../ui/page-header';
 import { StatusBadge } from '../ui/status-badge';
+import { WorkspacePagination } from '../ui/workspace-pagination';
 
 export function AdminReviewsClient() {
   const { request } = useAuth();
   const [items, setItems] = useState<AdminReview[]>([]);
   const [meta, setMeta] = useState<PaginationMeta | null>(null);
+  const [page, setPage] = useState(1);
   const [status, setStatus] = useState('PENDING');
   const [actionId, setActionId] = useState<string | null>(null);
   const [note, setNote] = useState('');
@@ -30,7 +32,7 @@ export function AdminReviewsClient() {
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
-    const params = new URLSearchParams({ page: '1', pageSize: '50' });
+    const params = new URLSearchParams({ page: String(page), pageSize: '12' });
     if (status) params.set('status', status);
 
     try {
@@ -44,7 +46,7 @@ export function AdminReviewsClient() {
     } finally {
       setLoading(false);
     }
-  }, [request, status]);
+  }, [page, request, status]);
 
   useEffect(() => {
     void load();
@@ -89,7 +91,7 @@ export function AdminReviewsClient() {
       <Card className="workspace-filter-card">
         <CardBody className="workspace-filter-row">
           <FieldFrame label="Review state">
-            <SelectInput value={status} onChange={(event) => setStatus(event.target.value)}>
+            <SelectInput value={status} onChange={(event) => { setStatus(event.target.value); setPage(1); }}>
               <option value="PENDING">Pending</option>
               <option value="PUBLISHED">Published</option>
               <option value="HIDDEN">Hidden</option>
@@ -173,6 +175,7 @@ export function AdminReviewsClient() {
           ))}
         </div>
       )}
+      {meta ? <WorkspacePagination meta={meta} onPage={setPage} /> : null}
     </>
   );
 }
