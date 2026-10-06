@@ -13,7 +13,10 @@ async function bootstrap() {
   });
 
   const config = app.get<ConfigService<AppEnv>>(ConfigService);
-  const port = config.get('API_PORT', { infer: true }) ?? 4000;
+  const port =
+    config.get('PORT', { infer: true }) ??
+    config.get('API_PORT', { infer: true }) ??
+    4000;
   const prefix = config.get('API_PREFIX', { infer: true }) ?? 'api/v1';
   const webOrigin = config.get('WEB_ORIGIN', { infer: true }) ?? 'http://localhost:3000';
   const trustProxyHops = config.get('TRUST_PROXY_HOPS', { infer: true }) ?? 0;
