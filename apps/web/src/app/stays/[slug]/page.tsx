@@ -17,6 +17,7 @@ import { ApiError } from '../../../lib/api-types';
 import { formatInrPaise } from '../../../lib/format';
 import { publicApiGet } from '../../../lib/public-api';
 import {
+  catalogueQueryString,
   firstParam,
   type PublicSearchParams,
 } from '../../../lib/search-params';
@@ -74,6 +75,7 @@ export default async function PropertyDetailPage({
     day: '2-digit',
   }).format(new Date());
 
+  const returnQuery = catalogueQueryString(query);
   const policy = property.petPolicy;
   const species = [
     policy?.allowsDogs ? 'Dogs' : null,
@@ -86,7 +88,7 @@ export default async function PropertyDetailPage({
       <SiteHeader />
       <main className="detail-page" id="main-content">
         <nav className="detail-breadcrumbs" aria-label="Breadcrumb">
-          <Link href="/stays">Stays</Link>
+          <Link href={`/stays?${returnQuery}`}>Stays</Link>
           <span aria-hidden="true">/</span>
           <span>{property.name}</span>
         </nav>
