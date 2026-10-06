@@ -171,7 +171,7 @@ Operational telemetry is not exposed on the public health surface.
 It is available only to ADMIN accounts:
 
 ```
-GET /api/v1/admin/metrics
+GET /api/v1/admin/observability/metrics
 ```
 
 The full-stack suite verifies that PARTNER receives 403 and ADMIN can read it.
