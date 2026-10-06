@@ -33,6 +33,12 @@ import {
   partnerPropertyDetailSelect,
   partnerPropertySummarySelect,
 } from './partner-property.select.js';
+import { assertPropertyTransition } from './property-state-machine.js';
+
+type ReadinessDb = Pick<
+  Prisma.TransactionClient,
+  'petPolicy' | 'propertyImage' | 'roomType' | 'roomInventory'
+>;
 
 @Injectable()
 export class PartnerPropertiesService {
@@ -172,14 +178,7 @@ export class PartnerPropertiesService {
     const property = await this.prisma.serializable(async (tx) => {
       const existing = await this.requireOwnedProperty(tx, partnerId, propertyId);
 
-      if (
-        existing.status !== PropertyStatus.PUBLISHED &&
-        existing.status !== PropertyStatus.PENDING_REVIEW
-      ) {
-        throw new ConflictException(
-          'Only a published or pending-review listing can be withdrawn.',
-        );
-      }
+      assertPropertyTransition(existing.status, PropertyStatus.DRAFT);
 
       await tx.propertyStatusEvent.create({
         data: {
@@ -617,6 +616,8 @@ export class PartnerPropertiesService {
       const existing = await this.requireOwnedProperty(tx, partnerId, propertyId);
       this.assertDraftEditable(existing.status);
 
+      assertPropertyTransition(existing.status, PropertyStatus.PENDING_REVIEW);
+
       const readiness = await this.listingReadiness(tx, existing.id);
       if (!readiness.ready) {
         throw new BadRequestException({
@@ -680,7 +681,7 @@ export class PartnerPropertiesService {
   }
 
   private async listingReadiness(
-    db: Prisma.TransactionClient | PrismaService,
+    db: ReadinessDb,
     propertyId: string,
   ) {
     const today = todayInIndia();
@@ -703,6 +704,7 @@ export class PartnerPropertiesService {
             active: true,
           },
           date: { gte: today },
+          closed: false,
         },
       }),
     ]);
