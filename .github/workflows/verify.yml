@@ -16,7 +16,7 @@ concurrency:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 35
 
     services:
       postgres:
@@ -50,7 +50,9 @@ jobs:
       WEB_ORIGIN: http://127.0.0.1:3000
       WEB_BASE_URL: http://127.0.0.1:3000
       API_BASE_URL: http://127.0.0.1:4000/api/v1
-      NEXT_PUBLIC_API_URL: http://127.0.0.1:4000/api/v1
+      NEXT_PUBLIC_API_URL: /api/v1
+      API_INTERNAL_URL: http://127.0.0.1:4000/api/v1
+      API_PROXY_ORIGIN: http://127.0.0.1:4000
       JWT_ACCESS_SECRET: ci-access-secret-that-is-longer-than-thirty-two-characters
       JWT_ACCESS_TTL: 15m
       JWT_ISSUER: purrfect-api
@@ -77,13 +79,29 @@ jobs:
         run: corepack enable
 
       - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - name: Generate Prisma client
         run: pnpm db:generate
 
-      - name: Create ephemeral database schema
-        run: pnpm --filter @purrfect/database db:push
+      - name: Deploy migrations to empty database
+        run: pnpm db:deploy
+
+      - name: Check migration status
+        run: pnpm db:status
+
+      - name: Prove migrations match Prisma schema
+        run: |
+          set +e
+          pnpm --filter @purrfect/database exec prisma migrate diff \
+            --from-url "$DATABASE_URL" \
+            --to-schema-datamodel prisma/schema.prisma \
+            --exit-code > migration-drift.txt
+          code=$?
+          cat migration-drift.txt
+          if [ "$code" -ne 0 ]; then
+            exit "$code"
+          fi
 
       - name: Seed test database
         env:
@@ -100,6 +118,9 @@ jobs:
         env:
           NODE_ENV: production
         run: pnpm build
+
+      - name: Build production API container
+        run: docker build -f apps/api/Dockerfile -t purrfect-api:ci .
 
       - name: Install Chromium
         run: pnpm exec playwright install --with-deps chromium
