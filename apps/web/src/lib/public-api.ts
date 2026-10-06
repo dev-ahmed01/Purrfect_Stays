@@ -1,11 +1,11 @@
-import { API_BASE_URL } from './api-config';
+import { SERVER_API_BASE_URL } from './api-config';
 import { ApiError, type ApiFailure, type ApiSuccess } from './api-types';
 
 export async function publicApiGet<T>(
   path: string,
   options: { revalidate?: number | false } = {},
 ): Promise<T> {
-  const url = `${API_BASE_URL}${path.startsWith('/') ? path : `/${path}`}`;
+  const url = `${SERVER_API_BASE_URL}${path.startsWith('/') ? path : `/${path}`}`;
 
   const response = await fetch(url, {
     headers: {
