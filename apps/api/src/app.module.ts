@@ -1,7 +1,7 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
-import { RequestContextService } from './common/context/request-context.service.js';
+import { RequestContextModule } from './common/context/request-context.module.js';
 import { AllExceptionsFilter } from './common/http/all-exceptions.filter.js';
 import { RequestIdMiddleware } from './common/http/request-id.middleware.js';
 import { ResponseEnvelopeInterceptor } from './common/http/response-envelope.interceptor.js';
@@ -16,11 +16,11 @@ import { HealthModule } from './health/health.module.js';
       isGlobal: true,
       validate: validateEnv,
     }),
+    RequestContextModule,
     DatabaseModule,
     HealthModule,
   ],
   providers: [
-    RequestContextService,
     {
       provide: APP_FILTER,
       useClass: AllExceptionsFilter,
