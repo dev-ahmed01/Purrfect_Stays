@@ -1,3 +1,4 @@
+import { propertySearchSchema } from '@purrfect/contracts';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { SearchFilters } from '../../components/search-filters';
@@ -5,6 +6,7 @@ import { SearchSort } from '../../components/search-sort';
 import { PropertyCard } from '../../components/property-card';
 import { SiteFooter } from '../../components/site-footer';
 import { SiteHeader } from '../../components/site-header';
+import { Alert } from '../../components/ui/alert';
 import { EmptyState } from '../../components/ui/empty-state';
 import type {
   CatalogueFacets,
@@ -12,6 +14,7 @@ import type {
 } from '../../lib/catalogue-types';
 import { publicApiGet } from '../../lib/public-api';
 import {
+  catalogueInputFromSearchParams,
   catalogueQueryString,
   firstParam,
   preserveStayContext,
@@ -49,17 +52,21 @@ export default async function StaysPage({
   searchParams: Promise<PublicSearchParams>;
 }) {
   const params = await searchParams;
+  const validation = propertySearchSchema.safeParse(
+    catalogueInputFromSearchParams(params),
+  );
   const query = catalogueQueryString(params);
   const stayContext = preserveStayContext(params);
 
-  const [results, facets] = await Promise.all([
-    publicApiGet<PropertySearchResponse>(`/properties?${query}`, {
-      revalidate: false,
-    }),
-    publicApiGet<CatalogueFacets>('/properties/facets', {
-      revalidate: 60,
-    }),
-  ]);
+  const facets = await publicApiGet<CatalogueFacets>('/properties/facets', {
+    revalidate: 60,
+  });
+
+  const results = validation.success
+    ? await publicApiGet<PropertySearchResponse>(`/properties?${query}`, {
+        revalidate: false,
+      })
+    : null;
 
   const destination = firstParam(params, 'destination');
   const title = destination
@@ -75,9 +82,11 @@ export default async function StaysPage({
             <p className="section-eyebrow">Verified stays</p>
             <h1>{title}</h1>
             <p>
-              {results.meta.totalItems === 1
-                ? '1 stay matches your filters.'
-                : `${results.meta.totalItems} stays match your filters.`}
+              {results
+                ? results!.meta.totalItems === 1
+                  ? '1 stay matches your filters.'
+                  : `${results!.meta.totalItems} stays match your filters.`
+                : 'Adjust the filters below to continue.'}
             </p>
           </div>
           <SearchSort params={params} />
@@ -89,10 +98,14 @@ export default async function StaysPage({
           </aside>
 
           <section className="stays-results" aria-label="Stay search results">
-            {results.items.length > 0 ? (
+            {!validation.success ? (
+              <Alert tone="danger" title="Check your search filters">
+                {validation.error.issues[0]?.message ?? 'One or more search filters are invalid.'}
+              </Alert>
+            ) : results && results.items.length > 0 ? (
               <>
                 <div className="stays-grid">
-                  {results.items.map((property) => (
+                  {results!.items.map((property) => (
                     <PropertyCard
                       key={property.id}
                       property={toPropertyCardData(property, stayContext)}
@@ -101,23 +114,23 @@ export default async function StaysPage({
                 </div>
 
                 <nav className="pagination" aria-label="Search result pages">
-                  {results.meta.hasPreviousPage ? (
+                  {results!.meta.hasPreviousPage ? (
                     <Link
                       className="button button-outline button-sm"
-                      href={pageHref(params, results.meta.page - 1)}
+                      href={pageHref(params, results!.meta.page - 1)}
                     >
                       ← Previous
                     </Link>
                   ) : <span />}
 
                   <span>
-                    Page {results.meta.page} of {results.meta.totalPages}
+                    Page {results!.meta.page} of {results!.meta.totalPages}
                   </span>
 
-                  {results.meta.hasNextPage ? (
+                  {results!.meta.hasNextPage ? (
                     <Link
                       className="button button-outline button-sm"
-                      href={pageHref(params, results.meta.page + 1)}
+                      href={pageHref(params, results!.meta.page + 1)}
                     >
                       Next →
                     </Link>
