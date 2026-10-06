@@ -14,7 +14,7 @@ export const propertySummarySelect = {
   startingPricePaise: true,
   featured: true,
   images: {
-    orderBy: { sortOrder: Prisma.SortOrder.asc },
+    orderBy: { sortOrder: 'asc' },
     take: 1,
     select: {
       url: true,
@@ -26,7 +26,7 @@ export const propertySummarySelect = {
     where: { verifiedAt: { not: null } },
     orderBy: {
       amenity: {
-        name: Prisma.SortOrder.asc,
+        name: 'asc',
       },
     },
     take: 6,
@@ -70,7 +70,7 @@ export const propertyDetailSelect = {
   latitude: true,
   longitude: true,
   images: {
-    orderBy: { sortOrder: Prisma.SortOrder.asc },
+    orderBy: { sortOrder: 'asc' },
     select: {
       url: true,
       altText: true,
@@ -81,7 +81,7 @@ export const propertyDetailSelect = {
     where: { verifiedAt: { not: null } },
     orderBy: {
       amenity: {
-        name: Prisma.SortOrder.asc,
+        name: 'asc',
       },
     },
     select: {
@@ -99,7 +99,7 @@ export const propertyDetailSelect = {
   },
   roomTypes: {
     where: { active: true },
-    orderBy: [{ nightlyRatePaise: Prisma.SortOrder.asc }, { name: Prisma.SortOrder.asc }],
+    orderBy: [{ nightlyRatePaise: 'asc' }, { name: 'asc' }],
     select: {
       id: true,
       name: true,
