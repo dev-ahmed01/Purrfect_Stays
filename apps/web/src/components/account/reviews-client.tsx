@@ -18,6 +18,7 @@ import { EmptyState } from '../ui/empty-state';
 import { FieldFrame, SelectInput, TextArea, TextInput } from '../ui/form-field';
 import { PageHeader } from '../ui/page-header';
 import { StatusBadge } from '../ui/status-badge';
+import { WorkspacePagination } from '../ui/workspace-pagination';
 
 type Editor =
   | { kind: 'closed' }
@@ -32,6 +33,7 @@ export function ReviewsClient({ initialBookingId }: { initialBookingId?: string 
   const [editor, setEditor] = useState<Editor>(
     initialBookingId ? { kind: 'create', bookingId: initialBookingId } : { kind: 'closed' },
   );
+  const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -42,7 +44,7 @@ export function ReviewsClient({ initialBookingId }: { initialBookingId?: string 
     setError(null);
     try {
       const [reviewData, bookingData] = await Promise.all([
-        request<{ items: MyReview[]; meta: PaginationMeta }>('/reviews?page=1&pageSize=50'),
+        request<{ items: MyReview[]; meta: PaginationMeta }>('/reviews?page=' + String(page) + '&pageSize=12'),
         request<{ items: BookingView[] }>('/bookings?status=COMPLETED&page=1&pageSize=50'),
       ]);
       setReviews(reviewData.items);
@@ -53,7 +55,7 @@ export function ReviewsClient({ initialBookingId }: { initialBookingId?: string 
     } finally {
       setLoading(false);
     }
-  }, [request]);
+  }, [page, request]);
 
   useEffect(() => {
     void load();
@@ -300,6 +302,7 @@ export function ReviewsClient({ initialBookingId }: { initialBookingId?: string 
           ))}
         </div>
       )}
+      {meta ? <WorkspacePagination meta={meta} onPage={setPage} /> : null}
     </>
   );
 }
