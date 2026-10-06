@@ -158,6 +158,8 @@ model Property {
   longitude          Decimal?               @db.Decimal(9, 6)
   averageRating      Decimal                @default(0) @db.Decimal(3, 2)
   reviewCount        Int                    @default(0)
+  ratingBaselineCount Int                   @default(0)
+  ratingBaselineTotal Decimal               @default(0) @db.Decimal(14, 2)
   startingPricePaise Int
   featured           Boolean                @default(false)
   publishedAt        DateTime?
