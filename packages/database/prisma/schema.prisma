@@ -187,6 +187,8 @@ model PetPolicy {
   allowsCats          Boolean     @default(true)
   allowsOther         Boolean     @default(false)
   allowedSizes        PetSize[]
+  allowedBreedKeys     String[]    @default([])
+  restrictedBreedKeys  String[]    @default([])
   requiresVaccination Boolean     @default(false)
   notes               String?
   createdAt           DateTime    @default(now())
