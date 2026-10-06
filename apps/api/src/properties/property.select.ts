@@ -23,6 +23,7 @@ export const propertySummarySelect = {
     },
   },
   amenities: {
+    where: { verifiedAt: { not: null } },
     orderBy: {
       amenity: {
         name: Prisma.SortOrder.asc,
@@ -75,6 +76,7 @@ export const propertyDetailSelect = {
     },
   },
   amenities: {
+    where: { verifiedAt: { not: null } },
     orderBy: {
       amenity: {
         name: Prisma.SortOrder.asc,
