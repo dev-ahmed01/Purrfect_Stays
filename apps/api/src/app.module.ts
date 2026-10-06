@@ -14,6 +14,7 @@ import { DatabaseModule } from './database/database.module.js';
 import { FavouritesModule } from './favourites/favourites.module.js';
 import { HealthModule } from './health/health.module.js';
 import { PetsModule } from './pets/pets.module.js';
+import { PartnerModule } from './partner/partner.module.js';
 import { PropertiesModule } from './properties/properties.module.js';
 import { ReviewsModule } from './reviews/reviews.module.js';
 
@@ -31,6 +32,7 @@ import { ReviewsModule } from './reviews/reviews.module.js';
     PetsModule,
     FavouritesModule,
     ReviewsModule,
+    PartnerModule,
     PropertiesModule,
     HealthModule,
   ],
