@@ -199,7 +199,8 @@ export function PartnerPropertyEditor({ propertyId }: { propertyId: string }) {
   async function createRoom(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!property) return;
-    const form = new FormData(event.currentTarget);
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
     const parsed = createRoomTypeSchema.safeParse({
       name: form.get('name'),
       description: String(form.get('description') ?? '').trim() || null,
@@ -215,7 +216,7 @@ export function PartnerPropertyEditor({ propertyId }: { propertyId: string }) {
     }
 
     await mutate('/partner/properties/' + property.id + '/room-types', 'POST', parsed.data);
-    event.currentTarget.reset();
+    formElement.reset();
   }
 
   async function updateRoom(roomId: string, event: FormEvent<HTMLFormElement>) {
