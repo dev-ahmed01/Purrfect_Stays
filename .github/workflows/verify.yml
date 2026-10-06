@@ -101,12 +101,13 @@ jobs:
         run: pnpm exec playwright install --with-deps chromium
 
       - name: Full-stack end-to-end verification
-        env:
-          NODE_ENV: production
         run: |
-          pnpm --filter @purrfect/api start > api.log 2>&1 &
+          # The production build above proves production compilation. The API runs
+          # in test mode here because GitHub's loopback transport is HTTP while
+          # production refresh cookies are intentionally Secure-only.
+          NODE_ENV=test pnpm --filter @purrfect/api start > api.log 2>&1 &
           API_PID=$!
-          pnpm --filter @purrfect/web start > web.log 2>&1 &
+          NODE_ENV=production pnpm --filter @purrfect/web start > web.log 2>&1 &
           WEB_PID=$!
 
           cleanup() {
