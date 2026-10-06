@@ -1,7 +1,8 @@
 import { expect, request as playwrightRequest, test } from '@playwright/test';
 
-const apiBaseURL =
-  process.env.API_BASE_URL ?? 'http://127.0.0.1:4000/api/v1';
+const apiBaseURL = (
+  process.env.API_BASE_URL ?? 'http://127.0.0.1:4000/api/v1'
+).replace(/\/?$/, '/');
 const webOrigin =
   process.env.WEB_BASE_URL ?? 'http://127.0.0.1:3000';
 
@@ -21,7 +22,7 @@ test('customer auth, pet, quote, idempotent booking and cancellation', async () 
 
   try {
     const email = 'ci-' + Date.now() + '@example.com';
-    const register = await api.post('/auth/register', {
+    const register = await api.post('auth/register', {
       data: {
         email,
         password: 'CI-Purrfect-User-2026!',
@@ -34,14 +35,14 @@ test('customer auth, pet, quote, idempotent booking and cancellation', async () 
     const initialAccessToken = registerBody.data.accessToken as string;
     expect(initialAccessToken).toBeTruthy();
 
-    const refresh = await api.post('/auth/refresh');
+    const refresh = await api.post('auth/refresh');
     expect(refresh.ok()).toBeTruthy();
     const refreshBody = await refresh.json();
     const accessToken = refreshBody.data.accessToken as string;
     expect(accessToken).toBeTruthy();
     expect(accessToken).not.toBe(initialAccessToken);
 
-    const staleSession = await api.get('/auth/me', {
+    const staleSession = await api.get('auth/me', {
       headers: {
         Authorization: 'Bearer ' + initialAccessToken,
       },
@@ -52,7 +53,7 @@ test('customer auth, pet, quote, idempotent booking and cancellation', async () 
       Authorization: 'Bearer ' + accessToken,
     };
 
-    const petResponse = await api.post('/pets', {
+    const petResponse = await api.post('pets', {
       headers: authHeaders,
       data: {
         name: 'Pixel',
@@ -66,7 +67,7 @@ test('customer auth, pet, quote, idempotent booking and cancellation', async () 
     const petBody = await petResponse.json();
     const petId = petBody.data.id as string;
 
-    const propertyResponse = await api.get('/properties/the-paw-villa');
+    const propertyResponse = await api.get('properties/the-paw-villa');
     expect(propertyResponse.ok()).toBeTruthy();
     const propertyBody = await propertyResponse.json();
     const roomTypeId = propertyBody.data.roomTypes[0].id as string;
@@ -79,7 +80,7 @@ test('customer auth, pet, quote, idempotent booking and cancellation', async () 
       petIds: [petId],
     };
 
-    const quote = await api.post('/bookings/quote', {
+    const quote = await api.post('bookings/quote', {
       headers: authHeaders,
       data: bookingInput,
     });
@@ -89,7 +90,7 @@ test('customer auth, pet, quote, idempotent booking and cancellation', async () 
     expect(quoteBody.data.pricing.totalPaise).toBeGreaterThan(0);
 
     const idempotencyKey = 'ci-booking-' + Date.now();
-    const firstBooking = await api.post('/bookings', {
+    const firstBooking = await api.post('bookings', {
       headers: {
         ...authHeaders,
         'Idempotency-Key': idempotencyKey,
@@ -100,7 +101,7 @@ test('customer auth, pet, quote, idempotent booking and cancellation', async () 
     const firstBody = await firstBooking.json();
     expect(firstBody.data.idempotentReplay).toBe(false);
 
-    const replay = await api.post('/bookings', {
+    const replay = await api.post('bookings', {
       headers: {
         ...authHeaders,
         'Idempotency-Key': idempotencyKey,
@@ -113,7 +114,7 @@ test('customer auth, pet, quote, idempotent booking and cancellation', async () 
     expect(replayBody.data.booking.id).toBe(firstBody.data.booking.id);
 
     const cancel = await api.post(
-      '/bookings/' + firstBody.data.booking.id + '/cancel',
+      'bookings/' + firstBody.data.booking.id + '/cancel',
       {
         headers: authHeaders,
         data: { reason: 'CI verifies transactional inventory release.' },
@@ -134,7 +135,7 @@ test('seeded partner/admin role surfaces and dependency readiness are reachable'
   });
 
   try {
-    const ready = await api.get('/health/ready');
+    const ready = await api.get('health/ready');
     expect(ready.ok()).toBeTruthy();
     const readyBody = await ready.json();
     expect(readyBody.data.dependencies).toEqual({
@@ -143,10 +144,10 @@ test('seeded partner/admin role surfaces and dependency readiness are reachable'
     });
 
     for (const [email, path] of [
-      ['partner@purrfect.local', '/partner/dashboard'],
-      ['admin@purrfect.local', '/admin/listings?status=PENDING_REVIEW&page=1&pageSize=1'],
+      ['partner@purrfect.local', 'partner/dashboard'],
+      ['admin@purrfect.local', 'admin/listings?status=PENDING_REVIEW&page=1&pageSize=1'],
     ] as const) {
-      const login = await api.post('/auth/login', {
+      const login = await api.post('auth/login', {
         data: {
           email,
           password: process.env.SEED_DEMO_PASSWORD,
