@@ -107,7 +107,7 @@ export default function HomePage() {
           <SectionHeading
             eyebrow="Top Picks"
             title="Featured Pet-Friendly Stays"
-            description="A polished preview of the seeded catalogue. Phase 11 connects these same cards to the live search API."
+            description="A curated preview of pet-friendly stays using the same cards throughout search and booking."
           />
           <div className="property-grid">
             {featured.map((property) => (
