@@ -1,13 +1,17 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, ServiceUnavailableException } from '@nestjs/common';
 import { SkipThrottle } from '@nestjs/throttler';
 import { Public } from '../auth/public.decorator.js';
 import { DatabaseHealthService } from '../common/database/database-health.service.js';
+import { RedisHealthService } from '../redis/redis-health.service.js';
 
 @Public()
 @SkipThrottle()
 @Controller('health')
 export class HealthController {
-  constructor(private readonly databaseHealth: DatabaseHealthService) {}
+  constructor(
+    private readonly databaseHealth: DatabaseHealthService,
+    private readonly redisHealth: RedisHealthService,
+  ) {}
 
   @Get()
   liveness() {
@@ -20,7 +24,23 @@ export class HealthController {
 
   @Get('ready')
   async readiness() {
-    const dependencies = await this.databaseHealth.check();
+    const [database, redis] = await Promise.allSettled([
+      this.databaseHealth.check(),
+      this.redisHealth.check(),
+    ]);
+
+    const dependencies = {
+      database: database.status === 'fulfilled' ? 'up' : 'down',
+      redis: redis.status === 'fulfilled' ? 'up' : 'down',
+    };
+
+    if (database.status === 'rejected' || redis.status === 'rejected') {
+      throw new ServiceUnavailableException({
+        code: 'SERVICE_UNAVAILABLE',
+        message: 'One or more required dependencies are unavailable.',
+        details: dependencies,
+      });
+    }
 
     return {
       status: 'ready',
