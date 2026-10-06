@@ -465,6 +465,10 @@ export const adminListingDecisionSchema = z.object({
   note: z.string().trim().min(3).max(1000),
 });
 
+export const adminListingActionSchema = z.object({
+  note: z.string().trim().min(3).max(1000),
+});
+
 export type PropertyStatus = z.infer<typeof propertyStatusSchema>;
 export type VerificationStatus = z.infer<typeof verificationStatusSchema>;
 export type CreatePartnerPropertyInput = z.infer<typeof createPartnerPropertySchema>;
@@ -480,6 +484,7 @@ export type PartnerBookingsQuery = z.infer<typeof partnerBookingsQuerySchema>;
 export type PartnerBookingTransitionInput = z.infer<typeof partnerBookingTransitionSchema>;
 export type AdminListingQueueQuery = z.infer<typeof adminListingQueueQuerySchema>;
 export type AdminListingDecisionInput = z.infer<typeof adminListingDecisionSchema>;
+export type AdminListingActionInput = z.infer<typeof adminListingActionSchema>;
 
 const passwordSchema = z
   .string()
